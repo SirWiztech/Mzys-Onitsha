@@ -1,0 +1,18 @@
+[
+  {
+    "id": "mrw05ra1hlb2ha",
+    "firstName": "Admin",
+    "lastName": "User",
+    "email": "admin@mzysonitsha.com",
+    "phone": "",
+    "dateOfBirth": "",
+    "gender": "male",
+    "branchId": "",
+    "cherubSeraph": null,
+    "occupation": "Administrator",
+    "address": "",
+    "status": "active",
+    "registrationDate": "2026-07-22T11:31:59.450Z",
+    "profileImage": null
+  }
+]

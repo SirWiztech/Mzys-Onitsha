@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-mzys-navy: #0A1F5C;
+  --color-mzys-blue: #1E3A8A;
+  --color-mzys-primary: #3A6CF6;
+  --color-mzys-light: #5B8DEF;
+  --color-mzys-white: #FFFFFF;
+  --color-mzys-gray-50: #F8FAFC;
+  --color-mzys-gray-100: #F1F5F9;
+  --color-mzys-gray-200: #E2E8F0;
+  --color-mzys-gray-300: #CBD5E1;
+  --color-mzys-gray-400: #94A3B8;
+  --color-mzys-gray-500: #64748B;
+  --color-mzys-gray-600: #475569;
+  --color-mzys-gray-700: #334155;
+  --color-mzys-gray-800: #1E293B;
+  --color-mzys-gray-900: #0F172A;
+  --color-mzys-success: #16A34A;
+  --color-mzys-warning: #F59E0B;
+  --color-mzys-danger: #DC2626;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #0A1F5C;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.gradient-primary {
+  background: linear-gradient(135deg, #0A1F5C 0%, #3A6CF6 100%);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #0A1F5C 0%, #3A6CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

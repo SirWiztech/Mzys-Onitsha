@@ -1,0 +1,34 @@
+[
+  {
+    "id": "mrw0770jv822j5",
+    "name": "Onitsha Main",
+    "location": "Onitsha, Anambra State",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-07-22T11:33:06.499Z"
+  },
+  {
+    "id": "mrw0770joct3yp",
+    "name": "GRA Branch",
+    "location": "GRA, Onitsha",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-07-22T11:33:06.499Z"
+  },
+  {
+    "id": "mrw0770jdowchx",
+    "name": "Fegge Branch",
+    "location": "Fegge, Onitsha",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-07-22T11:33:06.499Z"
+  },
+  {
+    "id": "mrw0770jnz5rsb",
+    "name": "Works Layout",
+    "location": "Works Layout, Onitsha",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-07-22T11:33:06.499Z"
+  }
+]
