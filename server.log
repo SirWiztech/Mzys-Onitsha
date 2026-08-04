@@ -1,0 +1,16 @@
+⨯ Failed to start server
+Error: listen EADDRINUSE: address already in use :::3458
+    at <unknown> (Error: listen EADDRINUSE: address already in use :::3458)
+    at new Promise (<anonymous>) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3458
+}
+json as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * C:\Users\HP\Desktop\Mzys-Onitsha\mzys-onitsha\package-lock.json
+
