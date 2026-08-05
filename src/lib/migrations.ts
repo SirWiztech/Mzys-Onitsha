@@ -30,16 +30,35 @@ function findSubdir(name: string): string | null {
 }
 
 export async function runMigrations(): Promise<void> {
+  const dbName = process.env.DB_NAME || 'mzys_onitsha';
+  const host = process.env.DB_HOST || '127.0.0.1';
+  const port = Number(process.env.DB_PORT || 3306);
+  const user = process.env.DB_USER || 'root';
+  const password = process.env.DB_PASSWORD || '';
+
   const conn = await mysql.createConnection({
-    host: process.env.DB_HOST || '127.0.0.1',
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'mzys_onitsha',
+    host,
+    port,
+    user,
+    password,
     multipleStatements: true,
   });
 
   try {
+    try {
+      await conn.query(
+        `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+      );
+      await conn.query(`USE \`${dbName}\``);
+    } catch (err) {
+      const e = err as { errno?: number; code?: string; sqlMessage?: string };
+      console.error(`[migrations] Cannot access database "${dbName}" as user "${user}".`);
+      console.error(
+        `[migrations] Fix: create the database and grant "${user}" all privileges on it in your Pxxl database panel.`
+      );
+      if (e.sqlMessage) console.error(`[migrations] ${e.sqlMessage}`);
+      throw err;
+    }
     await conn.query(`
       CREATE TABLE IF NOT EXISTS \`schema_migrations\` (
         \`id\` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
