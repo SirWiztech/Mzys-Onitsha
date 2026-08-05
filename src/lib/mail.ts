@@ -11,6 +11,7 @@ const PORT = Number(process.env.SMTP_PORT || 587);
 const USER = process.env.SMTP_USER;
 const PASS = process.env.SMTP_PASS;
 const FROM = process.env.MAIL_FROM || USER || 'no-reply@mzysonitsha.com';
+const APP_URL = (process.env.APP_URL || '').replace(/\/+$/, '');
 
 export async function sendEmail(
   to: string,
@@ -63,6 +64,19 @@ export async function sendOtpEmail(
       <p>${purpose === 'reset' ? 'Use the code below to reset your password.' : 'Use the code below to complete your registration.'}</p>
       <p style="font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #1e3a8a;">${code}</p>
       <p>This code is valid for <strong>10 minutes</strong>. If you did not request this, please ignore this email.</p>
+      ${
+        APP_URL
+          ? `<p style="margin-top: 24px;">
+              <a href="${APP_URL}/${purpose === 'reset' ? 'forgot-password' : 'register'}"
+                 style="background: #1e3a8a; color: #ffffff; padding: 10px 20px; border-radius: 6px; text-decoration: none; display: inline-block;">
+                ${purpose === 'reset' ? 'Reset Password' : 'Complete Registration'}
+              </a>
+            </p>
+            <p style="color: #6b7280; font-size: 12px; margin-top: 8px;">
+              Or copy and paste: ${APP_URL}/${purpose === 'reset' ? 'forgot-password' : 'register'}
+            </p>`
+          : ''
+      }
     </div>
   `;
   try {
