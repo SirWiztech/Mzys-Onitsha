@@ -29,6 +29,21 @@ function findSubdir(name: string): string | null {
   return null;
 }
 
+async function tryCreateDatabase(
+  conn: mysql.Connection,
+  dbName: string
+): Promise<boolean> {
+  try {
+    await conn.query(
+      `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+    );
+    await conn.query(`USE \`${dbName}\``);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function runMigrations(): Promise<void> {
   const dbName = process.env.DB_NAME || 'mzys_onitsha';
   const host = process.env.DB_HOST || '127.0.0.1';
@@ -46,18 +61,26 @@ export async function runMigrations(): Promise<void> {
 
   try {
     try {
-      await conn.query(
-        `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
-      );
       await conn.query(`USE \`${dbName}\``);
-    } catch (err) {
-      const e = err as { errno?: number; code?: string; sqlMessage?: string };
-      console.error(`[migrations] Cannot access database "${dbName}" as user "${user}".`);
-      console.error(
-        `[migrations] Fix: create the database and grant "${user}" all privileges on it in your Pxxl database panel.`
-      );
-      if (e.sqlMessage) console.error(`[migrations] ${e.sqlMessage}`);
-      throw err;
+    } catch (useErr) {
+      const e = useErr as { errno?: number; code?: string; sqlMessage?: string };
+      if (e.code === 'ER_BAD_DB_ERROR') {
+        const created = await tryCreateDatabase(conn, dbName);
+        if (!created) {
+          console.error(`[migrations] Database "${dbName}" does not exist and could not be created.`);
+          console.error(
+            `[migrations] Fix: create the database in your Pxxl database panel, or set DB_NAME to the correct database name (e.g. pxxldb_19fcd56cc1c0288).`
+          );
+          throw useErr;
+        }
+      } else {
+        console.error(`[migrations] Cannot access database "${dbName}" as user "${user}".`);
+        console.error(
+          `[migrations] Fix: grant "${user}" all privileges on database "${dbName}" in your Pxxl database panel.`
+        );
+        if (e.sqlMessage) console.error(`[migrations] ${e.sqlMessage}`);
+        throw useErr;
+      }
     }
     await conn.query(`
       CREATE TABLE IF NOT EXISTS \`schema_migrations\` (
