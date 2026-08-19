@@ -2,7 +2,7 @@ import mysql from 'mysql2/promise';
 
 const HOST = process.env.DB_HOST || '127.0.0.1';
 const PORT = Number(process.env.DB_PORT || 3306);
-const USER = process.env.DB_USER || 'root';
+const USER = process.env.DB_USERNAME || 'root';
 const PASSWORD = process.env.DB_PASSWORD || '';
 const DB = process.env.DB_NAME || 'mzys_onitsha';
 

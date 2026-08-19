@@ -10,13 +10,14 @@ import {
   Sparkles,
 } from 'lucide-react';
 import HeroCarousel from '@/components/hero-carousel';
+import SectionDivider from '@/components/section-divider';
 import Ferrofluid from '@/components/ferrofluid';
 import BorderGlow from '@/components/border-glow';
 import SpecularButton from '@/components/specular-button';
 import CardSwap, { Card } from '@/components/card-swap';
 import ChromaGrid from '@/components/chroma-grid';
 import ProfileCard from '@/components/profile-card';
-import Prism from '@/components/prism';
+import Prism from '@/components/prism'; 
 
 const SECTION_BG = '#0B1120';
 
@@ -33,6 +34,8 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <HeroCarousel />
+
+      <SectionDivider accent="white" />
 
       <section id="features" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG }}>
         <div className="absolute inset-0 z-0">
@@ -129,6 +132,8 @@ export default function Home() {
         </div>
       </section>
 
+      <SectionDivider accent="white" label="Features" />
+
       <section id="special-activities" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG }}>
         <div className="absolute inset-0 z-0">
           <Ferrofluid
@@ -160,6 +165,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <SectionDivider accent="white" label="Teams" />
 
       <section id="excos" className="relative py-20 overflow-hidden" style={{ background: '#0F172A' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -214,6 +221,8 @@ export default function Home() {
         </div>
       </section>
 
+      <SectionDivider accent="white" label="Excos" />
+
       <section id="activities" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG }}>
         <div className="absolute inset-0 z-0">
           <Ferrofluid
@@ -234,7 +243,7 @@ export default function Home() {
           />
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-12">
+          <div className="flex flex-col lg:flex-row items-center gap-12 overflow-hidden">
             <div className="flex-1 text-center lg:text-left">
               <h2 className="text-3xl font-bold text-white font-display">Weekly Activities</h2>
               <p className="mt-4 text-lg text-mzys-gray-300 max-w-lg">
@@ -261,8 +270,7 @@ export default function Home() {
                   View Schedule
                 </SpecularButton>
               </div>
-            </div>
-            <div className="flex-1 h-[600px] relative">
+            </div>            <div className="relative w-full flex-1 h-[440px] sm:h-[600px] max-w-full flex items-center justify-center mt-10 lg:mt-0">
               <CardSwap
                 width={420}
                 height={340}
@@ -331,6 +339,8 @@ export default function Home() {
         </div>
       </section>
 
+      <SectionDivider accent="white" label="Activities" />
+
       <section id="join" className="relative py-32 overflow-hidden" style={{ background: SECTION_BG }}>
         <div className="absolute inset-0 z-0">
           <Prism
@@ -344,6 +354,7 @@ export default function Home() {
             noise={0}
             glow={1}
             bloom={1.5}
+            suspendWhenOffscreen
           />
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">

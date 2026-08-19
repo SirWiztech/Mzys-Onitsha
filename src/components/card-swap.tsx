@@ -101,13 +101,16 @@ const CardSwap: React.FC<CardSwapProps> = ({
     const swap = () => {
       if (order.current.length < 2) return;
 
+      const compact = typeof window !== 'undefined' && window.innerWidth < 640;
+      const dropPx = compact ? 120 : 300;
+
       const [front, ...rest] = order.current;
       const elFront = refs[front].current;
       const tl = gsap.timeline();
       tlRef.current = tl;
 
       tl.to(elFront, {
-        y: '+=300',
+        y: `+=${dropPx}`,
         duration: config.durDrop,
         ease: config.ease,
       });
@@ -203,7 +206,7 @@ const CardSwap: React.FC<CardSwapProps> = ({
   return (
     <div
       ref={container}
-      className="absolute bottom-0 right-0 transform translate-x-[5%] translate-y-[5%] origin-bottom-right perspective-[900px] overflow-visible max-[768px]:translate-x-[25%] max-[768px]:translate-y-[15%] max-[768px]:scale-[0.75] max-[480px]:translate-x-[25%] max-[480px]:translate-y-[15%] max-[480px]:scale-[0.55]"
+      className="relative perspective-[900px] overflow-visible max-[768px]:scale-[0.75] max-[480px]:scale-[0.55]"
       style={{ width, height }}
     >
       {rendered}

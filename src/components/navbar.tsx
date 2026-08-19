@@ -144,14 +144,14 @@ export default function Navbar({ user }: NavbarProps) {
         )}
 
         <div
-          className={`relative px-5 sm:px-7 lg:px-9 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          className={`relative pl-2 pr-4 sm:px-7 lg:px-9 w-full transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             scrolled ? 'h-14' : 'h-16'
-          } flex items-center justify-between`}
+          } flex items-center justify-between gap-2`}
         >
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-2.5 group flex-shrink-0 relative z-10"
+            className="flex items-center gap-2.5 group flex-shrink-0 relative z-10 min-w-0"
             aria-label="MZYS Home"
           >
             <motion.div
@@ -164,8 +164,10 @@ export default function Navbar({ user }: NavbarProps) {
               <img
                 src="/images/main-mzys-logo.png"
                 alt="MZYS"
-                className={`block object-contain transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] drop-shadow-sm ${
-                  scrolled ? 'w-44 h-10' : 'w-56 h-14'
+                className={`block object-contain max-w-[55vw] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] drop-shadow-sm ${
+                  scrolled
+                    ? 'w-32 h-9 sm:w-44 sm:h-10'
+                    : 'w-40 h-10 sm:w-56 sm:h-14'
                 }`}
               />
             </motion.div>
@@ -300,13 +302,13 @@ export default function Navbar({ user }: NavbarProps) {
           {/* Mobile Toggle */}
           <motion.button
             onClick={() => setMobileOpen((prev) => !prev)}
-            className={`md:hidden p-2 rounded-full transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-blue-500/50 focus-visible:outline-offset-2 backdrop-blur-sm ${
+            className={`md:hidden flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full transition-colors hover:bg-white/30 focus-visible:outline-2 focus-visible:outline-blue-500/50 focus-visible:outline-offset-2 backdrop-blur-sm ${
               scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white'
             }`}
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             whileTap={{ scale: 0.88 }}
           >
-            <div className="w-5 h-5 flex flex-col justify-center gap-[5px] overflow-hidden">
+            <div className="relative w-5 h-5 flex flex-col justify-center gap-[5px] overflow-hidden">
               {[0, 1, 2].map((i) => (
                 <motion.span
                   key={i}

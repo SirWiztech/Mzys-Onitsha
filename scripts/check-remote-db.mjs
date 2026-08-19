@@ -3,7 +3,7 @@ import mysql from 'mysql2/promise';
 const base = {
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
-  user: process.env.DB_USER,
+  user: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
 };
 

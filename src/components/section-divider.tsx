@@ -1,128 +1,241 @@
-'use client';
+import { useEffect, useRef, useState } from "react";
 
-import { useId } from 'react';
-import { motion, type Transition } from 'framer-motion';
-
-export type BlobVariant = 'blob1' | 'blob2' | 'blob3';
-
-interface SectionDividerProps {
-  topColor?: string;
-  bottomColor?: string;
-  accentColor?: string;
-  height?: number;
-  flip?: boolean;
-  variant?: BlobVariant;
-  animate?: boolean;
-  className?: string;
-}
-
-const blobPaths: Record<BlobVariant, { fwd: string; rev: string }> = {
-  blob1: {
-    fwd: 'M0,96 C120,140 240,12 360,72 C480,132 600,0 720,48 C840,96 960,28 1080,60 C1200,92 1320,44 1440,80 L1440,0 L0,0 Z',
-    rev: 'M0,24 C120,-20 240,108 360,48 C480,-12 600,120 720,72 C840,24 960,92 1080,60 C1200,28 1320,76 1440,40 L1440,0 L0,0 Z',
-  },
-  blob2: {
-    fwd: 'M0,72 C160,132 280,8 440,56 C600,104 720,16 840,64 C960,112 1080,4 1200,48 C1320,92 1380,28 1440,60 L1440,0 L0,0 Z',
-    rev: 'M0,48 C160,-12 280,112 440,64 C600,16 720,104 840,56 C960,8 1080,116 1200,72 C1320,28 1380,92 1440,60 L1440,0 L0,0 Z',
-  },
-  blob3: {
-    fwd: 'M0,48 C96,104 240,60 360,96 C480,132 600,20 720,44 C840,68 960,100 1080,52 C1200,4 1320,36 1440,88 L1440,0 L0,0 Z',
-    rev: 'M0,72 C96,16 240,60 360,24 C480,-12 600,100 720,76 C840,52 960,20 1080,68 C1200,116 1320,84 1440,32 L1440,0 L0,0 Z',
-  },
-};
-
-const morphPaths: Record<BlobVariant, { fwd: string; rev: string }> = {
-  blob1: {
-    fwd: 'M0,84 C140,132 260,8 380,64 C500,120 620,4 740,56 C860,108 980,32 1100,68 C1220,104 1340,48 1440,88 L1440,0 L0,0 Z',
-    rev: 'M0,40 C120,-10 240,96 360,60 C480,24 600,108 720,64 C840,20 960,84 1080,52 C1200,20 1320,68 1440,36 L1440,0 L0,0 Z',
-  },
-  blob2: {
-    fwd: 'M0,60 C160,8 280,104 440,56 C600,8 720,116 840,68 C960,20 1080,104 1200,48 C1320,-8 1380,72 1440,40 L1440,0 L0,0 Z',
-    rev: 'M0,60 C160,108 280,24 440,68 C600,112 720,8 840,56 C960,104 1080,20 1200,64 C1320,108 1380,36 1440,72 L1440,0 L0,0 Z',
-  },
-  blob3: {
-    fwd: 'M0,64 C96,8 240,52 360,16 C480,-20 600,92 720,68 C840,44 960,12 1080,60 C1200,108 1320,76 1440,24 L1440,0 L0,0 Z',
-    rev: 'M0,32 C96,88 240,44 360,80 C480,116 600,4 720,28 C840,52 960,84 1080,36 C1200,-12 1320,20 1440,72 L1440,0 L0,0 Z',
-  },
-};
-
-const morphTransition: Transition = {
-  duration: 8,
-  ease: 'easeInOut',
-  repeat: Infinity,
-  repeatType: 'reverse',
-};
-
+/**
+ * SectionDivider
+ * ----------------
+ * A theme-agnostic divider for separating page sections.
+ *
+ * Signature interaction: the two hairlines grow outward from a faceted
+ * diamond marker the first time the divider scrolls into view, then the
+ * marker settles into a slow, quiet glow. Runs once per mount, and skips
+ * straight to its resting state if the user prefers reduced motion.
+ *
+ * Works on light or dark sections out of the box because color comes from
+ * CSS variables that default to `currentColor`-friendly neutrals — override
+ * them per-instance or per-theme without touching the component.
+ *
+ * Usage:
+ *   <SectionDivider />
+ *   <SectionDivider label="Our Work" />
+ *   <SectionDivider variant="minimal" />
+ *   <SectionDivider accent="#7c5cff" />
+ */
 export default function SectionDivider({
-  topColor = '#0B1120',
-  bottomColor = '#0B1120',
-  accentColor,
-  height = 120,
-  flip = false,
-  variant = 'blob1',
-  animate = false,
-  className = '',
-}: SectionDividerProps) {
-  const uid = useId();
-  const id = `sg-${uid}`;
+  label,
+  variant = "default", // "default" | "minimal" | "bold"
+  accent, // optional CSS color override for the marker + line ends
+  className = "",
+}: {
+  label?: string;
+  variant?: "default" | "minimal" | "bold";
+  accent?: string;
+  className?: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
 
-  const key = flip ? 'rev' : 'fwd';
-  const path = blobPaths[variant][key];
-  const morphPath = morphPaths[variant][key];
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduceMotion(mq.matches);
+    const handleChange = (e: MediaQueryListEvent) => setReduceMotion(e.matches);
+    mq.addEventListener?.("change", handleChange);
 
-  const baseAccent = accentColor || 'rgba(59,130,246,0.06)';
+    const node = containerRef.current;
+    if (!node) return;
+
+    if (mq.matches) {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.4 }
+    );
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+      mq.removeEventListener?.("change", handleChange);
+    };
+  }, []);
+
+  const sizes =
+    {
+      minimal: { marker: 6, gap: "1rem" },
+      default: { marker: 10, gap: "1.25rem" },
+      bold: { marker: 14, gap: "1.5rem" },
+    }[variant] ?? { marker: 10, gap: "1.25rem" };
 
   return (
     <div
-      className={`relative w-full overflow-hidden pointer-events-none ${className}`}
-      style={{ height, marginTop: -height }}
-      aria-hidden="true"
+      ref={containerRef}
+      role="separator"
+      aria-orientation="horizontal"
+      className={`section-divider ${className}`}
+      style={{
+        "--sd-accent": accent || "var(--divider-accent, #8a8f98)",
+        "--sd-line": "var(--divider-line, currentColor)",
+        "--sd-marker-size": `${sizes.marker}px`,
+        "--sd-gap": sizes.gap,
+      } as React.CSSProperties}
     >
-      <svg
-        className="absolute inset-0 w-full h-full"
-        viewBox={`0 0 1440 ${height}`}
-        preserveAspectRatio="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <linearGradient id={`${id}-g1`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={topColor} stopOpacity="0" />
-            <stop offset="60%" stopColor={topColor} stopOpacity="0.94" />
-          </linearGradient>
-          <linearGradient id={`${id}-g2`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={bottomColor} stopOpacity="0" />
-            <stop offset="50%" stopColor={baseAccent} stopOpacity="1" />
-            <stop offset="100%" stopColor={bottomColor} stopOpacity="0" />
-          </linearGradient>
-        </defs>
+      <span
+        className={`sd-line sd-line-left ${isVisible ? "sd-grown" : ""} ${
+          reduceMotion ? "sd-no-anim" : ""
+        }`}
+      />
 
-        {animate ? (
-          <g>
-            <motion.path
-              d={path}
-              fill={`url(#${id}-g1)`}
-              animate={{ d: morphPath }}
-              transition={morphTransition}
-            />
-            <motion.path
-              d={path}
-              fill={`url(#${id}-g2)`}
-              animate={{ d: morphPath }}
-              transition={morphTransition}
-              style={{ filter: 'blur(3px)' }}
-            />
-          </g>
-        ) : (
-          <g>
-            <path d={path} fill={`url(#${id}-g1)`} />
-            <path
-              d={path}
-              fill={`url(#${id}-g2)`}
-              style={{ filter: 'blur(3px)' }}
-            />
-          </g>
-        )}
-      </svg>
+      <span className="sd-marker-wrap">
+        <svg
+          className={`sd-marker ${isVisible ? "sd-marker-in" : ""} ${
+            reduceMotion ? "sd-no-anim" : ""
+          }`}
+          width={sizes.marker * 2}
+          height={sizes.marker * 2}
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <rect
+            x="12"
+            y="1.5"
+            width="15"
+            height="15"
+            rx="2"
+            transform="rotate(45 12 12)"
+            fill="var(--sd-accent)"
+            fillOpacity="0.12"
+            stroke="var(--sd-accent)"
+            strokeWidth="1.25"
+          />
+          <rect
+            x="12"
+            y="6"
+            width="8.5"
+            height="8.5"
+            rx="1"
+            transform="rotate(45 12 12)"
+            fill="var(--sd-accent)"
+          />
+        </svg>
+
+        {label ? <span className="sd-label">{label}</span> : null}
+      </span>
+
+      <span
+        className={`sd-line sd-line-right ${isVisible ? "sd-grown" : ""} ${
+          reduceMotion ? "sd-no-anim" : ""
+        }`}
+      />
+
+      <style>{`
+        .section-divider {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          padding: 2.5rem 0;
+          user-select: none;
+        }
+
+        .sd-line {
+          flex: 1 1 auto;
+          height: 1px;
+          transform: scaleX(0);
+          transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .sd-line-left {
+          transform-origin: right center;
+          background: linear-gradient(
+            to left,
+            color-mix(in srgb, var(--sd-line) 28%, transparent),
+            transparent
+          );
+        }
+
+        .sd-line-right {
+          transform-origin: left center;
+          background: linear-gradient(
+            to right,
+            color-mix(in srgb, var(--sd-line) 28%, transparent),
+            transparent
+          );
+        }
+
+        .sd-line.sd-grown {
+          transform: scaleX(1);
+        }
+
+        .sd-line.sd-no-anim {
+          transform: scaleX(1);
+          transition: none;
+        }
+
+        .sd-marker-wrap {
+          display: flex;
+          align-items: center;
+          gap: 0.65rem;
+          padding: 0 var(--sd-gap);
+          flex-shrink: 0;
+        }
+
+        .sd-marker {
+          opacity: 0;
+          transform: scale(0.4) rotate(-25deg);
+          transition:
+            opacity 0.6s ease 0.5s,
+            transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s;
+          animation: sd-pulse 3.2s ease-in-out infinite;
+          animation-play-state: paused;
+        }
+
+        .sd-marker.sd-marker-in {
+          opacity: 1;
+          transform: scale(1) rotate(0deg);
+          animation-play-state: running;
+        }
+
+        .sd-marker.sd-no-anim {
+          opacity: 1;
+          transform: scale(1) rotate(0deg);
+          transition: none;
+        }
+
+        @keyframes sd-pulse {
+          0%, 100% {
+            filter: drop-shadow(0 0 0 transparent);
+          }
+          50% {
+            filter: drop-shadow(0 0 6px color-mix(in srgb, var(--sd-accent) 55%, transparent));
+          }
+        }
+
+        .sd-label {
+          font-size: 0.72rem;
+          font-weight: 600;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: var(--sd-accent);
+          white-space: nowrap;
+          opacity: 0.85;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .sd-line, .sd-marker {
+            transition: none !important;
+            animation: none !important;
+            transform: none !important;
+            opacity: 1 !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

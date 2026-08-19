@@ -127,7 +127,7 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
     const fx = fxRef.current;
     if (!btn || !fx) return;
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const renderer = new Renderer({ alpha: true, premultipliedAlpha: true, antialias: true, dpr });
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, 0);
@@ -180,6 +180,7 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
 
     let pointerAngle: number | null = null;
     let proximityT = 0;
+    let raf = 0;
     const onPointerMove = (e: PointerEvent) => {
       const rect = btn.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
@@ -196,31 +197,32 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
       }
       const t = Math.max(0, 1 - dist / Math.max((propsRef.current.proximity as number) ?? 250, 1));
       proximityT = t * t * (3 - 2 * t);
+      if (proximityT > 0.0005 && !raf) raf = requestAnimationFrame(update);
     };
-    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
 
     let angle = 2.4;
     let idleAngle = 2.4;
     let bright = 0;
     let last = performance.now();
-    let raf = 0;
 
     const lineC = new Color();
     const baseC = new Color();
 
     const update = (now: number) => {
-      raf = requestAnimationFrame(update);
+      raf = 0;
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
       const p = propsRef.current;
 
       idleAngle += (p.speed as number) * dt;
-      const steer = p.followMouse && pointerAngle != null && (!p.autoAnimate || proximityT > 0);
+      const auto = (p.autoAnimate as boolean) ?? false;
+      const steer = (p.followMouse as boolean) && pointerAngle != null && (!auto || proximityT > 0);
       const target = steer ? pointerAngle : idleAngle;
       const diff = ((target! - angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
       angle += diff * (1 - Math.exp(-dt * 7));
 
-      const brightTarget = p.autoAnimate ? 1 : proximityT;
+      const brightTarget = auto ? 1 : proximityT;
       bright += (brightTarget - bright) * (1 - Math.exp(-dt * 8));
 
       lineC.set(p.lineColor as string);
@@ -234,11 +236,16 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
       program.uniforms.uShineFade.value = (((p.shineFade as number) ?? 40) * Math.PI) / 180;
       program.uniforms.uThickness.value = ((p.thickness as number) ?? 1) * dpr;
       renderer.render({ scene: mesh });
+
+      const moving = Math.abs(angle - (target as number)) > 1e-3;
+      if (auto || bright > 0.01 || (steer && moving)) {
+        raf = requestAnimationFrame(update);
+      }
     };
     raf = requestAnimationFrame(update);
 
     return () => {
-      cancelAnimationFrame(raf);
+      if (raf) cancelAnimationFrame(raf);
       ro.disconnect();
       window.removeEventListener('pointermove', onPointerMove);
       if (gl.canvas.parentNode === fx) fx.removeChild(gl.canvas as HTMLCanvasElement);

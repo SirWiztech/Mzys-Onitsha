@@ -32,14 +32,14 @@ export default function Home() {
       <section className="relative overflow-hidden py-14" style={{ background: '#0B1120' }}>
         <div className="flex overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
           <div className="flex gap-16 animate-[marquee_30s_linear_infinite] shrink-0">
-            {['MZYS', 'KDA', 'ZION DAUGHTERS', 'ESA', 'ORE OFE', 'OGO OLUWA', 'ARMY OF SALVATION', 'E T B A'].map((name) => (
+            {[' ', 'ETBA', 'MZYS', 'KDA', 'ZION DAUGHTERS', 'ESA', 'ORE OFE', 'OGO OLUWA', 'ARMY OF SALVATION'].map((name) => (
               <span key={name} className="text-5xl md:text-7xl font-bold text-white/10 whitespace-nowrap tracking-tight hover:text-white/30 transition-colors">
                 {name}
               </span>
             ))}
           </div>
           <div className="flex gap-16 animate-[marquee_30s_linear_infinite] shrink-0" aria-hidden>
-            {['MZYS', 'KDA', 'ZION DAUGHTERS', 'ESA', 'ORE OFE', 'OGO OLUWA', 'ARMY OF SALVATION', 'E T B A'].map((name) => (
+            {[ ' ', 'ETBA', 'MZYS', 'KDA', 'ZION DAUGHTERS', 'ESA', 'ORE OFE', 'OGO OLUWA', 'ARMY OF SALVATION'].map((name) => (
               <span key={name} className="text-5xl md:text-7xl font-bold text-white/10 whitespace-nowrap tracking-tight">
                 {name}
               </span>

@@ -52,6 +52,7 @@ const ParticleCard = ({
   enableTilt = true,
   clickEffect = false,
   enableMagnetism = false,
+  onClick,
 }: {
   children: React.ReactNode;
   className?: string;
@@ -62,6 +63,7 @@ const ParticleCard = ({
   enableTilt?: boolean;
   clickEffect?: boolean;
   enableMagnetism?: boolean;
+  onClick?: () => void;
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const particlesRef = useRef<HTMLElement[]>([]);
@@ -219,45 +221,46 @@ const ParticleCard = ({
     };
 
     const handleClick = (e: MouseEvent) => {
-      if (!clickEffect) return;
+      if (clickEffect) {
+        const rect = element.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-      const rect = element.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+        const maxDistance = Math.max(
+          Math.hypot(x, y),
+          Math.hypot(x - rect.width, y),
+          Math.hypot(x, y - rect.height),
+          Math.hypot(x - rect.width, y - rect.height)
+        );
 
-      const maxDistance = Math.max(
-        Math.hypot(x, y),
-        Math.hypot(x - rect.width, y),
-        Math.hypot(x, y - rect.height),
-        Math.hypot(x - rect.width, y - rect.height)
-      );
+        const ripple = document.createElement('div');
+        ripple.style.cssText = `
+          position: absolute;
+          width: ${maxDistance * 2}px;
+          height: ${maxDistance * 2}px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(${glowColor}, 0.4) 0%, rgba(${glowColor}, 0.2) 30%, transparent 70%);
+          left: ${x - maxDistance}px;
+          top: ${y - maxDistance}px;
+          pointer-events: none;
+          z-index: 1000;
+        `;
 
-      const ripple = document.createElement('div');
-      ripple.style.cssText = `
-        position: absolute;
-        width: ${maxDistance * 2}px;
-        height: ${maxDistance * 2}px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(${glowColor}, 0.4) 0%, rgba(${glowColor}, 0.2) 30%, transparent 70%);
-        left: ${x - maxDistance}px;
-        top: ${y - maxDistance}px;
-        pointer-events: none;
-        z-index: 1000;
-      `;
+        element.appendChild(ripple);
 
-      element.appendChild(ripple);
+        gsap.fromTo(
+          ripple,
+          { scale: 0, opacity: 1 },
+          {
+            scale: 1,
+            opacity: 0,
+            duration: 0.8,
+            ease: 'power2.out',
+            onComplete: () => ripple.remove(),
+          }
+        );
+      }
 
-      gsap.fromTo(
-        ripple,
-        { scale: 0, opacity: 1 },
-        {
-          scale: 1,
-          opacity: 0,
-          duration: 0.8,
-          ease: 'power2.out',
-          onComplete: () => ripple.remove(),
-        }
-      );
     };
 
     element.addEventListener('mouseenter', handleMouseEnter);
@@ -273,13 +276,14 @@ const ParticleCard = ({
       element.removeEventListener('click', handleClick);
       clearAllParticles();
     };
-  }, [animateParticles, clearAllParticles, disableAnimations, enableTilt, enableMagnetism, clickEffect, glowColor]);
+  }, [animateParticles, clearAllParticles, disableAnimations, enableTilt, enableMagnetism, clickEffect, glowColor, onClick]);
 
   return (
     <div
       ref={cardRef}
       className={`${className} relative overflow-hidden`}
       style={{ ...style, position: 'relative', overflow: 'hidden' } as React.CSSProperties}
+      onClick={() => { if (onClick) onClick(); }}
     >
       {children}
     </div>
@@ -454,6 +458,8 @@ export interface BentoCard {
   title: string;
   description: string;
   label: string;
+  href?: string;
+  icon?: React.ReactNode;
 }
 
 export interface MagicBentoProps {
@@ -497,6 +503,7 @@ const MagicBento = ({
   const gridRef = useRef<HTMLDivElement>(null);
   const isMobile = useMobileDetection();
   const shouldDisableAnimations = disableAnimations || isMobile;
+
 
   return (
     <>
@@ -624,7 +631,7 @@ const MagicBento = ({
       <BentoCardGrid gridRef={gridRef}>
         <div className="card-responsive grid gap-2">
           {cards.map((card, index) => {
-            const baseClassName = `card flex flex-col justify-between relative aspect-[4/3] min-h-[200px] w-full max-w-full p-5 rounded-[20px] border border-solid font-light overflow-hidden transition-colors duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.15)] ${
+            const baseClassName = `card flex flex-col justify-between relative aspect-[4/3] min-h-[200px] w-full max-w-full p-5 rounded-[20px] border border-solid font-light overflow-hidden transition-colors duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.15)] cursor-pointer ${
               enableBorderGlow ? 'card--border-glow' : ''
             }`;
 
@@ -650,8 +657,10 @@ const MagicBento = ({
                   enableTilt={enableTilt}
                   clickEffect={clickEffect}
                   enableMagnetism={enableMagnetism}
+                  onClick={card.href ? () => { window.location.href = card.href!; } : undefined}
                 >
                   <div className="card__header flex justify-between gap-3 relative text-white">
+                    {card.icon && <span className="text-white/70">{card.icon}</span>}
                     <span className="card__label text-base">{card.label}</span>
                   </div>
                   <div className="card__content flex flex-col relative text-white">
@@ -671,6 +680,7 @@ const MagicBento = ({
                 key={index}
                 className={baseClassName}
                 style={cardStyle}
+                onClick={() => { if (card.href) window.location.href = card.href; }}
                 ref={el => {
                   if (!el) return;
 
@@ -732,45 +742,46 @@ const MagicBento = ({
                   };
 
                   const handleClick = (e: MouseEvent) => {
-                    if (!clickEffect || shouldDisableAnimations) return;
+                    if (clickEffect && !shouldDisableAnimations) {
+                      const rect = el.getBoundingClientRect();
+                      const x = e.clientX - rect.left;
+                      const y = e.clientY - rect.top;
 
-                    const rect = el.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
+                      const maxDistance = Math.max(
+                        Math.hypot(x, y),
+                        Math.hypot(x - rect.width, y),
+                        Math.hypot(x, y - rect.height),
+                        Math.hypot(x - rect.width, y - rect.height)
+                      );
 
-                    const maxDistance = Math.max(
-                      Math.hypot(x, y),
-                      Math.hypot(x - rect.width, y),
-                      Math.hypot(x, y - rect.height),
-                      Math.hypot(x - rect.width, y - rect.height)
-                    );
+                      const ripple = document.createElement('div');
+                      ripple.style.cssText = `
+                        position: absolute;
+                        width: ${maxDistance * 2}px;
+                        height: ${maxDistance * 2}px;
+                        border-radius: 50%;
+                        background: radial-gradient(circle, rgba(${glowColor}, 0.4) 0%, rgba(${glowColor}, 0.2) 30%, transparent 70%);
+                        left: ${x - maxDistance}px;
+                        top: ${y - maxDistance}px;
+                        pointer-events: none;
+                        z-index: 1000;
+                      `;
 
-                    const ripple = document.createElement('div');
-                    ripple.style.cssText = `
-                      position: absolute;
-                      width: ${maxDistance * 2}px;
-                      height: ${maxDistance * 2}px;
-                      border-radius: 50%;
-                      background: radial-gradient(circle, rgba(${glowColor}, 0.4) 0%, rgba(${glowColor}, 0.2) 30%, transparent 70%);
-                      left: ${x - maxDistance}px;
-                      top: ${y - maxDistance}px;
-                      pointer-events: none;
-                      z-index: 1000;
-                    `;
+                      el.appendChild(ripple);
 
-                    el.appendChild(ripple);
+                      gsap.fromTo(
+                        ripple,
+                        { scale: 0, opacity: 1 },
+                        {
+                          scale: 1,
+                          opacity: 0,
+                          duration: 0.8,
+                          ease: 'power2.out',
+                          onComplete: () => ripple.remove(),
+                        }
+                      );
+                    }
 
-                    gsap.fromTo(
-                      ripple,
-                      { scale: 0, opacity: 1 },
-                      {
-                        scale: 1,
-                        opacity: 0,
-                        duration: 0.8,
-                        ease: 'power2.out',
-                        onComplete: () => ripple.remove(),
-                      }
-                    );
                   };
 
                   el.addEventListener('mousemove', handleMouseMove);
@@ -779,6 +790,7 @@ const MagicBento = ({
                 }}
               >
                 <div className="card__header flex justify-between gap-3 relative text-white">
+                  {card.icon && <span className="text-white/70">{card.icon}</span>}
                   <span className="card__label text-base">{card.label}</span>
                 </div>
                 <div className="card__content flex flex-col relative text-white">

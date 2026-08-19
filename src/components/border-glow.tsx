@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useCallback, useState, useEffect, type ReactNode } from 'react';
+import { useRef, useCallback, useState, useEffect, useMemo, type ReactNode } from 'react';
+import { useCoarsePointer } from '@/lib/use-coarse-pointer';
 
 function parseHSL(hslStr: string) {
   const match = hslStr.match(/([\d.]+)\s*([\d.]+)%?\s*([\d.]+)%?/);
@@ -90,6 +91,8 @@ const BorderGlow: React.FC<BorderGlowProps> = ({
   const [edgeProximity, setEdgeProximity] = useState(0);
   const [sweepActive, setSweepActive] = useState(false);
 
+  const isCoarse = useCoarsePointer();
+
   const getCenterOfElement = useCallback((el: HTMLDivElement) => {
     const { width, height } = el.getBoundingClientRect();
     return [width / 2, height / 2];
@@ -117,15 +120,33 @@ const BorderGlow: React.FC<BorderGlowProps> = ({
     return degrees;
   }, [getCenterOfElement]);
 
+  const pendingPointerRef = useRef<{ x: number; y: number } | null>(null);
+  const pointerRafRef = useRef(0);
+
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (isCoarse) return;
     const card = cardRef.current;
     if (!card) return;
     const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setEdgeProximity(getEdgeProximity(card, x, y));
-    setCursorAngle(getCursorAngle(card, x, y));
-  }, [getEdgeProximity, getCursorAngle]);
+    pendingPointerRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    if (pointerRafRef.current) return;
+    pointerRafRef.current = requestAnimationFrame(() => {
+      pointerRafRef.current = 0;
+      const el = cardRef.current;
+      const pt = pendingPointerRef.current;
+      pendingPointerRef.current = null;
+      if (!el || !pt) return;
+      setEdgeProximity(getEdgeProximity(el, pt.x, pt.y));
+      setCursorAngle(getCursorAngle(el, pt.x, pt.y));
+    });
+  }, [isCoarse, getEdgeProximity, getCursorAngle]);
+
+  useEffect(() => {
+    return () => {
+      if (pointerRafRef.current) cancelAnimationFrame(pointerRafRef.current);
+      pointerRafRef.current = 0;
+    };
+  }, []);
 
   useEffect(() => {
     if (!animated) return;
@@ -156,9 +177,10 @@ const BorderGlow: React.FC<BorderGlowProps> = ({
     ? Math.max(0, (edgeProximity * 100 - edgeSensitivity) / (100 - edgeSensitivity))
     : 0;
 
-  const meshGradients = buildMeshGradients(colors);
-  const borderBg = meshGradients.map(g => `${g} border-box`);
-  const fillBg = meshGradients.map(g => `${g} padding-box`);
+  const meshGradients = useMemo(() => buildMeshGradients(colors), [colors]);
+  const boxShadow = useMemo(() => buildBoxShadow(glowColor, glowIntensity), [glowColor, glowIntensity]);
+  const borderBg = useMemo(() => meshGradients.map((g) => `${g} border-box`), [meshGradients]);
+  const fillBg = useMemo(() => meshGradients.map((g) => `${g} padding-box`), [meshGradients]);
   const angleDeg = `${cursorAngle.toFixed(3)}deg`;
 
   return (
@@ -235,7 +257,7 @@ const BorderGlow: React.FC<BorderGlowProps> = ({
           className="absolute rounded-[inherit]"
           style={{
             inset: `${glowRadius}px`,
-            boxShadow: buildBoxShadow(glowColor, glowIntensity),
+            boxShadow,
           }}
         />
       </span>

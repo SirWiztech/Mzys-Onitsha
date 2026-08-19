@@ -65,7 +65,8 @@ const Prism = ({
     const HOVSTR = Math.max(0, hoverStrength || 1);
     const INERT = Math.max(0, Math.min(1, inertia || 0.12));
 
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const isCoarse = typeof window !== 'undefined' && !!window.matchMedia?.('(hover: none), (pointer: coarse)').matches;
+    const dpr = Math.min(isCoarse ? 1.5 : 2, window.devicePixelRatio || 1);
     const renderer = new Renderer({
       dpr,
       alpha: transparent,

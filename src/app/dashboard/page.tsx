@@ -227,6 +227,8 @@ export default function DashboardPage() {
           title: stat.value,
           description: `Click to view ${stat.label.toLowerCase()}`,
           label: stat.label,
+          href: stat.href,
+          icon: <stat.icon className="w-5 h-5" />,
         }));
         if (bentoCards.length < 6) {
           bentoCards.push(

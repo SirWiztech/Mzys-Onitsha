@@ -2,6 +2,7 @@
 
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
+import { useCoarsePointer } from '@/lib/use-coarse-pointer';
 
 interface ChromaItem {
   image: string;
@@ -28,6 +29,8 @@ const ChromaGrid = ({ items, className = '', radius = 300, damping = 0.45, fadeO
   const setX = useRef<any>(null);
   const setY = useRef<any>(null);
   const pos = useRef({ x: 0, y: 0 });
+
+  const isCoarse = useCoarsePointer();
 
   const demo: ChromaItem[] = [
     {
@@ -98,6 +101,7 @@ const ChromaGrid = ({ items, className = '', radius = 300, damping = 0.45, fadeO
   const data = items?.length ? items : demo;
 
   useEffect(() => {
+    if (isCoarse) return;
     const el = rootRef.current;
     if (!el) return;
     setX.current = gsap.quickSetter(el, '--x', 'px');
@@ -106,7 +110,7 @@ const ChromaGrid = ({ items, className = '', radius = 300, damping = 0.45, fadeO
     pos.current = { x: width / 2, y: height / 2 };
     if (setX.current) setX.current(pos.current.x);
     if (setY.current) setY.current(pos.current.y);
-  }, []);
+  }, [isCoarse]);
 
   const moveTo = (x: number, y: number) => {
     gsap.to(pos.current, {
@@ -123,6 +127,7 @@ const ChromaGrid = ({ items, className = '', radius = 300, damping = 0.45, fadeO
   };
 
   const handleMove = (e: React.PointerEvent) => {
+    if (isCoarse) return;
     const r = rootRef.current?.getBoundingClientRect();
     if (!r) return;
     moveTo(e.clientX - r.left, e.clientY - r.top);
@@ -130,6 +135,7 @@ const ChromaGrid = ({ items, className = '', radius = 300, damping = 0.45, fadeO
   };
 
   const handleLeave = () => {
+    if (isCoarse) return;
     gsap.to(fadeRef.current, { opacity: 1, duration: fadeOut, overwrite: true });
   };
 
@@ -190,32 +196,36 @@ const ChromaGrid = ({ items, className = '', radius = 300, damping = 0.45, fadeO
       ))}
 
       {/* Spotlight vignette overlay — dims outer cards, reveals hovered one */}
-      <div
-        className="absolute inset-0 pointer-events-none z-30"
-        style={{
-          backdropFilter: 'grayscale(1) brightness(0.78)',
-          WebkitBackdropFilter: 'grayscale(1) brightness(0.78)',
-          background: 'rgba(0,0,0,0.001)',
-          maskImage:
-            'radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 15%,rgba(0,0,0,0.10) 30%,rgba(0,0,0,0.22)45%,rgba(0,0,0,0.35)60%,rgba(0,0,0,0.50)75%,rgba(0,0,0,0.68)88%,white 100%)',
-          WebkitMaskImage:
-            'radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 15%,rgba(0,0,0,0.10) 30%,rgba(0,0,0,0.22)45%,rgba(0,0,0,0.35)60%,rgba(0,0,0,0.50)75%,rgba(0,0,0,0.68)88%,white 100%)',
-        }}
-      />
-      <div
-        ref={fadeRef}
-        className="absolute inset-0 pointer-events-none transition-opacity duration-[250ms] z-40"
-        style={{
-          backdropFilter: 'grayscale(1) brightness(0.78)',
-          WebkitBackdropFilter: 'grayscale(1) brightness(0.78)',
-          background: 'rgba(0,0,0,0.001)',
-          maskImage:
-            'radial-gradient(circle var(--r) at var(--x) var(--y),white 0%,white 15%,rgba(255,255,255,0.90)30%,rgba(255,255,255,0.78)45%,rgba(255,255,255,0.65)60%,rgba(255,255,255,0.50)75%,rgba(255,255,255,0.32)88%,transparent 100%)',
-          WebkitMaskImage:
-            'radial-gradient(circle var(--r) at var(--x) var(--y),white 0%,white 15%,rgba(255,255,255,0.90)30%,rgba(255,255,255,0.78)45%,rgba(255,255,255,0.65)60%,rgba(255,255,255,0.50)75%,rgba(255,255,255,0.32)88%,transparent 100%)',
-          opacity: 1,
-        }}
-      />
+      {!isCoarse && (
+        <>
+          <div
+            className="absolute inset-0 pointer-events-none z-30"
+            style={{
+              backdropFilter: 'grayscale(1) brightness(0.78)',
+              WebkitBackdropFilter: 'grayscale(1) brightness(0.78)',
+              background: 'rgba(0,0,0,0.001)',
+              maskImage:
+                'radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 15%,rgba(0,0,0,0.10) 30%,rgba(0,0,0,0.22)45%,rgba(0,0,0,0.35)60%,rgba(0,0,0,0.50)75%,rgba(0,0,0,0.68)88%,white 100%)',
+              WebkitMaskImage:
+                'radial-gradient(circle var(--r) at var(--x) var(--y),transparent 0%,transparent 15%,rgba(0,0,0,0.10) 30%,rgba(0,0,0,0.22)45%,rgba(0,0,0,0.35)60%,rgba(0,0,0,0.50)75%,rgba(0,0,0,0.68)88%,white 100%)',
+            }}
+          />
+          <div
+            ref={fadeRef}
+            className="absolute inset-0 pointer-events-none transition-opacity duration-[250ms] z-40"
+            style={{
+              backdropFilter: 'grayscale(1) brightness(0.78)',
+              WebkitBackdropFilter: 'grayscale(1) brightness(0.78)',
+              background: 'rgba(0,0,0,0.001)',
+              maskImage:
+                'radial-gradient(circle var(--r) at var(--x) var(--y),white 0%,white 15%,rgba(255,255,255,0.90)30%,rgba(255,255,255,0.78)45%,rgba(255,255,255,0.65)60%,rgba(255,255,255,0.50)75%,rgba(255,255,255,0.32)88%,transparent 100%)',
+              WebkitMaskImage:
+                'radial-gradient(circle var(--r) at var(--x) var(--y),white 0%,white 15%,rgba(255,255,255,0.90)30%,rgba(255,255,255,0.78)45%,rgba(255,255,255,0.65)60%,rgba(255,255,255,0.50)75%,rgba(255,255,255,0.32)88%,transparent 100%)',
+              opacity: 1,
+            }}
+          />
+        </>
+      )}
     </div>
   );
 };
