@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Renderer, Program, Mesh, Triangle } from 'ogl';
 
 const MAX_COLORS = 8;
@@ -210,7 +210,8 @@ interface FerrofluidProps {
   mixBlendMode?: React.CSSProperties['mixBlendMode'];
 }
 
-const Ferrofluid: React.FC<FerrofluidProps> = ({
+const Ferrofluid: React.FC<FerrofluidProps> = (props) => {
+  const {
   className,
   dpr,
   paused = false,
@@ -230,7 +231,7 @@ const Ferrofluid: React.FC<FerrofluidProps> = ({
   mouseRadius = 0.35,
   mouseDampening = 0.15,
   mixBlendMode,
-}) => {
+} = props;
   const containerRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
   const programRef = useRef<Program | null>(null);
@@ -240,13 +241,19 @@ const Ferrofluid: React.FC<FerrofluidProps> = ({
   const mouseTargetRef = useRef<[number, number]>([0, 0]);
   const lastTimeRef = useRef(0);
 
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
+    const mq = window.matchMedia('(hover: none), (pointer: coarse)');
+    setIsMobile(mq.matches);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) return;
     const container = containerRef.current;
     if (!container) return;
 
-    const isCoarsePointer = typeof window !== 'undefined' && !!window.matchMedia?.('(hover: none), (pointer: coarse)').matches;
     const renderer = new Renderer({
-      dpr: dpr ?? (typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, isCoarsePointer ? 1 : 2) : 1),
+      dpr: dpr ?? Math.min(window.devicePixelRatio || 1, 2),
       alpha: true,
       antialias: false,
     });
@@ -407,6 +414,25 @@ const Ferrofluid: React.FC<FerrofluidProps> = ({
     mouseRadius,
     mouseDampening,
   ]);
+
+  // Mobile: render a lightweight CSS gradient instead of WebGL
+  if (isMobile) {
+    const c = colors?.length ? colors : ['#ffffff', '#ffffff', '#ffffff'];
+    const duration = Math.max(8, 20 / speed);
+    return (
+      <div
+        className={`w-full h-full overflow-hidden relative ${className ?? ''}`}
+        style={{
+          opacity,
+          contain: 'strict',
+          ...(mixBlendMode && { mixBlendMode }),
+          background: `linear-gradient(${flowDirection === 'down' ? '180deg' : flowDirection === 'up' ? '0deg' : flowDirection === 'left' ? '270deg' : '90deg'}, ${c.join(', ')})`,
+          backgroundSize: '200% 200%',
+          animation: `ferrofluidShift ${duration}s ease-in-out infinite alternate`,
+        }}
+      />
+    );
+  }
 
   return (
     <div

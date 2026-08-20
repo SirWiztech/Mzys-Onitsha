@@ -76,8 +76,8 @@ const ProfileCard = ({
   }, []);
 
   useEffect(() => {
-    const isMobile = 'ontouchstart' in window;
-    if (!enableTilt || (isMobile && !enableMobileTilt)) return;
+    const mq = window.matchMedia('(hover: none), (pointer: coarse)');
+    if (!enableTilt || (mq.matches && !enableMobileTilt)) return;
 
     const card = cardRef.current;
     if (!card) return;
