@@ -66,21 +66,27 @@ export default function HeroCarousel() {
 
   return (
     <section className="relative h-[650px] md:h-[760px]">
-      {slides.map((s, i) => (
-        <div
-          key={i}
-          className={`absolute inset-0 transition-opacity duration-[1200ms] ease-in-out ${
-            i === current ? 'opacity-100 z-10' : 'opacity-0 z-0'
-          }`}
-        >
+      {slides.map((s, i) => {
+        const diff = Math.abs(i - current);
+        const isActive = i === current;
+        const isNear = diff <= 1 || diff >= slides.length - 1;
+        if (!isActive && !isNear) return null;
+        return (
           <div
-            className="absolute inset-0 bg-cover bg-[center_top_15%] bg-no-repeat"
-            style={{ backgroundImage: `url(${encodeURI(s.image)})` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-mzys-navy/85 via-mzys-navy/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-        </div>
-      ))}
+            key={i}
+            className={`absolute inset-0 transition-opacity duration-[1200ms] ease-in-out ${
+              isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
+            }`}
+          >
+            <div
+              className="absolute inset-0 bg-cover bg-[center_top_15%] bg-no-repeat"
+              style={{ backgroundImage: `url(${encodeURI(s.image)})` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-mzys-navy/85 via-mzys-navy/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          </div>
+        );
+      })}
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
         <div className="max-w-3xl">

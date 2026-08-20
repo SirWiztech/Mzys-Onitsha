@@ -37,7 +37,7 @@ export default function Home() {
 
       <SectionDivider accent="white" />
 
-      <section id="features" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG }}>
+      <section id="features" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG, contain: 'layout style' }}>
         <div className="absolute inset-0 z-0">
           <Ferrofluid
             colors={['#0A1F5C', '#1E3A8A', '#3A6CF6', '#0A1F5C']}
@@ -134,7 +134,7 @@ export default function Home() {
 
       <SectionDivider accent="white" label="Features" />
 
-      <section id="special-activities" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG }}>
+      <section id="special-activities" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG, contain: 'layout style' }}>
         <div className="absolute inset-0 z-0">
           <Ferrofluid
             colors={['#3A6CF6', '#0A1F5C', '#5B8DEF', '#0A1F5C']}
@@ -168,7 +168,7 @@ export default function Home() {
 
       <SectionDivider accent="white" label="Teams" />
 
-      <section id="excos" className="relative py-20 overflow-hidden" style={{ background: '#0F172A' }}>
+      <section id="excos" className="relative py-20 overflow-hidden" style={{ background: '#0F172A', contain: 'layout style' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-white font-display">The Excos</h2>
@@ -223,7 +223,7 @@ export default function Home() {
 
       <SectionDivider accent="white" label="Excos" />
 
-      <section id="activities" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG }}>
+      <section id="activities" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG, contain: 'layout style' }}>
         <div className="absolute inset-0 z-0">
           <Ferrofluid
             colors={['#0A1F5C', '#1E3A8A', '#3A6CF6', '#0A1F5C']}
@@ -341,7 +341,7 @@ export default function Home() {
 
       <SectionDivider accent="white" label="Activities" />
 
-      <section id="join" className="relative py-32 overflow-hidden" style={{ background: SECTION_BG }}>
+      <section id="join" className="relative py-32 overflow-hidden" style={{ background: SECTION_BG, contain: 'layout style' }}>
         <div className="absolute inset-0 z-0">
           <Prism
             animationType="rotate"

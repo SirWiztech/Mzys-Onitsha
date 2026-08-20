@@ -244,10 +244,11 @@ const Ferrofluid: React.FC<FerrofluidProps> = ({
     const container = containerRef.current;
     if (!container) return;
 
+    const isCoarsePointer = typeof window !== 'undefined' && !!window.matchMedia?.('(hover: none), (pointer: coarse)').matches;
     const renderer = new Renderer({
-      dpr: dpr ?? (typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1),
+      dpr: dpr ?? (typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, isCoarsePointer ? 1 : 2) : 1),
       alpha: true,
-      antialias: true,
+      antialias: false,
     });
     rendererRef.current = renderer;
     const gl = renderer.gl;
@@ -412,6 +413,7 @@ const Ferrofluid: React.FC<FerrofluidProps> = ({
       ref={containerRef}
       className={`w-full h-full overflow-hidden relative ${className ?? ''}`}
       style={{
+        contain: 'strict',
         ...(mixBlendMode && { mixBlendMode }),
       }}
     />
