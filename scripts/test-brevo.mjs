@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-// Load .env.local manually
+// Load .env.local
 const envPath = join(process.cwd(), '.env.local');
 const envContent = readFileSync(envPath, 'utf-8');
 for (const line of envContent.split('\n')) {
@@ -11,7 +11,6 @@ for (const line of envContent.split('\n')) {
   if (eqIdx === -1) continue;
   const key = trimmed.slice(0, eqIdx).trim();
   let value = trimmed.slice(eqIdx + 1).trim();
-  // Remove surrounding quotes
   if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
     value = value.slice(1, -1);
   }
@@ -19,12 +18,7 @@ for (const line of envContent.split('\n')) {
 }
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const FROM_EMAIL = (process.env.MAIL_FROM || '').match(/<(.+)>/)?.[1] || 'noreply@mzysonitsha.com';
-
-if (!BREVO_API_KEY || BREVO_API_KEY === 'your_brevo_api_key_here') {
-  console.error('❌ BREVO_API_KEY is not set in .env.local');
-  process.exit(1);
-}
+const FROM_EMAIL = (process.env.MAIL_FROM || '').match(/<(.+)>/)?.[1] || 'okpechichinaza0@gmail.com';
 
 const TO = 'edgematrix2026@gmail.com';
 
@@ -47,35 +41,31 @@ const html = `
   </div>
 `;
 
-async function main() {
-  console.log(`📧 Sending test email to ${TO}...`);
+console.log(`📧 Sending test email to ${TO} from ${FROM_EMAIL}...`);
 
-  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': BREVO_API_KEY,
-      accept: 'application/json',
-    },
-    body: JSON.stringify({
-      sender: { name: 'MZYS Onitsha', email: FROM_EMAIL },
-      to: [{ email: TO, name: 'EdgeMatrix' }],
-      subject: '✅ MZYS Brevo Mailer Test — Connection Successful',
-      htmlContent: html,
-    }),
-  });
+const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'api-key': BREVO_API_KEY,
+    accept: 'application/json',
+  },
+  body: JSON.stringify({
+    sender: { name: 'MZYS Onitsha', email: FROM_EMAIL },
+    to: [{ email: TO, name: 'EdgeMatrix' }],
+    subject: '✅ MZYS Brevo Mailer Test — Connection Successful',
+    htmlContent: html,
+  }),
+});
 
-  if (res.ok) {
-    const data = await res.json();
-    console.log('✅ Email sent successfully!');
-    console.log(`   Message ID: ${data.messageId}`);
-    console.log(`   Check your inbox at ${TO}`);
-  } else {
-    const error = await res.text();
-    console.error(`❌ Brevo API error (${res.status}):`);
-    console.error(error);
-    process.exit(1);
-  }
+if (res.ok) {
+  const data = await res.json();
+  console.log('✅ Email sent successfully!');
+  console.log(`   Message ID: ${data.messageId}`);
+  console.log(`   From: ${FROM_EMAIL}`);
+  console.log(`   To: ${TO}`);
+} else {
+  const error = await res.text();
+  console.error(`❌ Brevo API error (${res.status}):`);
+  console.error(error);
 }
-
-main();

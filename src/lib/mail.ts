@@ -52,6 +52,8 @@ export async function sendEmail(
   });
 }
 
+const LOGO_URL = APP_URL ? `${APP_URL}/images/main-mzys-logo.png` : '';
+
 export async function sendOtpEmail(
   to: string,
   code: string,
@@ -62,11 +64,16 @@ export async function sendOtpEmail(
       ? 'Reset your MZYS password'
       : 'Verify your MZYS registration';
 
+  const logoHtml = LOGO_URL
+    ? `<img src="${LOGO_URL}" alt="MZYS" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 12px;" />`
+    : `<div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #1e3a8a, #3b82f6); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: white; font-weight: bold; font-size: 24px;">MZYS</div>`;
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
       <div style="text-align: center; margin-bottom: 24px;">
-        <h2 style="color: #1e3a8a; margin: 0;">MZYS Onitsha</h2>
-        <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 13px;">Methodist Youth Society</p>
+        ${logoHtml}
+        <h2 style="color: #1e3a8a; margin: 0; font-size: 22px;">MZYS Onitsha</h2>
+        <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 13px;">ESOCS Youth Society</p>
       </div>
       <div style="background: #f8fafc; border-radius: 12px; padding: 32px; text-align: center; border: 1px solid #e2e8f0;">
         <p style="color: #374151; margin: 0 0 16px 0; font-size: 15px;">
@@ -96,7 +103,7 @@ export async function sendOtpEmail(
       }
       <div style="text-align: center; margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e7eb;">
         <p style="color: #9ca3af; font-size: 11px; margin: 0;">
-          © ${new Date().getFullYear()} MZYS Onitsha. All rights reserved.
+          © ${new Date().getFullYear()} MZYS Onitsha — ESOCS Youth Society. All rights reserved.
         </p>
       </div>
     </div>
