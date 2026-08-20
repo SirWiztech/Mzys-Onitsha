@@ -9,7 +9,12 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getSession();
+  let user = null;
+  try {
+    user = await getSession();
+  } catch {
+    // DB connection may fail in production — don't crash the page
+  }
 
   return (
     <>
