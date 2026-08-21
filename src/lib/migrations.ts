@@ -1,7 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
-import mysql from 'mysql2/promise';
-import type { RowDataPacket } from 'mysql2';
 
 const TABLES = [
   'users',
@@ -29,27 +27,18 @@ function findSubdir(name: string): string | null {
   return null;
 }
 
-async function tryCreateDatabase(
-  conn: mysql.Connection,
-  dbName: string
-): Promise<boolean> {
-  try {
-    await conn.query(
-      `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
-    );
-    await conn.query(`USE \`${dbName}\``);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export async function runMigrations(): Promise<void> {
+  // Dynamic import so the native mysql2 binary is never loaded at module import time.
+  // On Wasmer, importing mysql2 at the top level crashes the server process.
+  const mysql = await import('mysql2/promise');
+
   const dbName = process.env.DB_NAME || 'mzys_onitsha';
   const host = process.env.DB_HOST || '127.0.0.1';
   const port = Number(process.env.DB_PORT || 3306);
   const user = process.env.DB_USERNAME || 'root';
   const password = process.env.DB_PASSWORD || '';
+
+  console.log(`[migrations] Connecting → host=${host} port=${port} user=${user} db=${dbName}`);
 
   const conn = await mysql.createConnection({
     host,
@@ -65,19 +54,13 @@ export async function runMigrations(): Promise<void> {
     } catch (useErr) {
       const e = useErr as { errno?: number; code?: string; sqlMessage?: string };
       if (e.code === 'ER_BAD_DB_ERROR') {
-        const created = await tryCreateDatabase(conn, dbName);
+        const created = await tryCreateDatabase(conn, mysql, dbName);
         if (!created) {
           console.error(`[migrations] Database "${dbName}" does not exist and could not be created.`);
-          console.error(
-            `[migrations] Fix: create the database in your Pxxl database panel, or set DB_NAME to the correct database name (e.g. pxxldb_19fcd56cc1c0288).`
-          );
           throw useErr;
         }
       } else {
         console.error(`[migrations] Cannot access database "${dbName}" as user "${user}".`);
-        console.error(
-          `[migrations] Fix: grant "${user}" all privileges on database "${dbName}" in your Pxxl database panel.`
-        );
         if (e.sqlMessage) console.error(`[migrations] ${e.sqlMessage}`);
         throw useErr;
       }
@@ -99,7 +82,7 @@ export async function runMigrations(): Promise<void> {
         .sort();
 
       for (const file of files) {
-        const [applied] = await conn.query<RowDataPacket[]>(
+        const [applied] = await conn.query<{ n: number }[]>(
           `SELECT COUNT(*) AS n FROM \`schema_migrations\` WHERE \`name\` = ?`,
           [file]
         );
@@ -133,7 +116,7 @@ export async function runMigrations(): Promise<void> {
       const file = join(dataDir, `${table}.json`);
       if (!existsSync(file)) continue;
 
-      const [countRows] = await conn.query<RowDataPacket[]>(
+      const [countRows] = await conn.query<{ n: number }[]>(
         `SELECT COUNT(*) AS n FROM \`${table}\``
       );
       const n = Number(countRows[0]?.n);
@@ -160,5 +143,21 @@ export async function runMigrations(): Promise<void> {
     console.log('[migrations] Database ready');
   } finally {
     await conn.end();
+  }
+}
+
+async function tryCreateDatabase(
+  conn: { query: (sql: string) => Promise<unknown> },
+  mysql: typeof import('mysql2/promise'),
+  dbName: string
+): Promise<boolean> {
+  try {
+    await conn.query(
+      `CREATE DATABASE IF NOT EXISTS \`${dbName}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`
+    );
+    await conn.query(`USE \`${dbName}\``);
+    return true;
+  } catch {
+    return false;
   }
 }

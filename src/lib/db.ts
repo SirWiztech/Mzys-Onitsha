@@ -1,40 +1,49 @@
-import mysql from 'mysql2/promise';
+/**
+ * Database module — lazy-loads mysql2/promise so the server never crashes
+ * at import time if the native binary is missing or incompatible.
+ * On Wasmer, mysql2 native binaries may not match the container's architecture,
+ * so we defer the import to first query.
+ */
 
-const DB_HOST = process.env.DB_HOST || '127.0.0.1';
-const DB_PORT = Number(process.env.DB_PORT || 3306);
-const DB_USER = process.env.DB_USERNAME || 'root';
-const DB_PASSWORD = process.env.DB_PASSWORD || '';
-const DB_NAME = process.env.DB_NAME || 'mzys_onitsha';
+let poolPromise: Promise<import('mysql2/promise').Pool> | null = null;
 
-console.log(`[db] Creating pool → host=${DB_HOST} port=${DB_PORT} user=${DB_USER} db=${DB_NAME}`);
+function createPool(): Promise<import('mysql2/promise').Pool> {
+  return import('mysql2/promise').then((mysql) => {
+    const DB_HOST = process.env.DB_HOST || '127.0.0.1';
+    const DB_PORT = Number(process.env.DB_PORT || 3306);
+    const DB_USER = process.env.DB_USERNAME || 'root';
+    const DB_PASSWORD = process.env.DB_PASSWORD || '';
+    const DB_NAME = process.env.DB_NAME || 'mzys_onitsha';
 
-const pool = mysql.createPool({
-  host: DB_HOST,
-  port: DB_PORT,
-  user: DB_USER,
-  password: DB_PASSWORD,
-  database: DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  maxIdle: 10,
-  idleTimeout: 60000,
-  queueLimit: 0,
-  charset: 'utf8mb4',
-  dateStrings: true,
-  // Enable connect timeout so we fail fast instead of hanging
-  connectTimeout: 10000,
-});
+    console.log(`[db] Creating pool → host=${DB_HOST} port=${DB_PORT} user=${DB_USER} db=${DB_NAME}`);
+
+    return mysql.createPool({
+      host: DB_HOST,
+      port: DB_PORT,
+      user: DB_USER,
+      password: DB_PASSWORD,
+      database: DB_NAME,
+      waitForConnections: true,
+      connectionLimit: 10,
+      maxIdle: 10,
+      idleTimeout: 60000,
+      queueLimit: 0,
+      charset: 'utf8mb4',
+      dateStrings: true,
+      connectTimeout: 10000,
+    });
+  });
+}
+
+async function getPool(): Promise<import('mysql2/promise').Pool> {
+  if (!poolPromise) poolPromise = createPool();
+  return poolPromise;
+}
 
 export async function query<T>(sql: string, params: unknown[] = []): Promise<T[]> {
-  try {
-    const [rows] = await pool.query(sql, params);
-    return rows as T[];
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(`[db] Query failed: ${sql.slice(0, 120)}...`);
-    console.error(`[db] Error: ${msg}`);
-    throw err;
-  }
+  const p = await getPool();
+  const [rows] = await p.query(sql, params);
+  return rows as T[];
 }
 
 export async function queryOne<T>(sql: string, params: unknown[] = []): Promise<T | null> {
@@ -42,10 +51,10 @@ export async function queryOne<T>(sql: string, params: unknown[] = []): Promise<
   return rows[0] ?? null;
 }
 
-/** Test the DB connection — returns true if connected, false otherwise */
 export async function testConnection(): Promise<boolean> {
   try {
-    const conn = await pool.getConnection();
+    const p = await getPool();
+    const conn = await p.getConnection();
     console.log('[db] ✅ Connection successful');
     conn.release();
     return true;
@@ -56,4 +65,7 @@ export async function testConnection(): Promise<boolean> {
   }
 }
 
-export default pool;
+export default {
+  query: (sql: string, params?: unknown[]) => query(sql, params),
+  getConnection: () => getPool().then((p) => p.getConnection()),
+};
