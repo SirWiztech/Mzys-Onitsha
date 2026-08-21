@@ -6,13 +6,11 @@ import {
   Shield,
   MessageCircle,
   Building2,
-  CalendarRange,
-  Sparkles,
 } from 'lucide-react';
 import HeroCarousel from '@/components/hero-carousel';
-import SectionDivider from '@/components/section-divider';
 import Ferrofluid from '@/components/ferrofluid';
 import BorderGlow from '@/components/border-glow';
+import GlassIcon from '@/components/glass-icon';
 import SpecularButton from '@/components/specular-button';
 import CardSwap, { Card } from '@/components/card-swap';
 import ChromaGrid from '@/components/chroma-grid';
@@ -34,8 +32,6 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       <HeroCarousel />
-
-      <SectionDivider accent="white" />
 
       <section id="features" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG, contain: 'layout style' }}>
         <div className="absolute inset-0 z-0">
@@ -64,38 +60,7 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                title: 'Member Directory',
-                desc: 'Searchable directory with profiles, contact info, branch, and occupation details.',
-                icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
-              },
-              {
-                title: 'Financial Tracking',
-                desc: 'Track membership dues, branch remittances, and maintain transparent records.',
-                icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-              },
-              {
-                title: 'Events Calendar',
-                desc: 'Shared calendar for meetings, conferences, programs, and special gatherings.',
-                icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
-              },
-              {
-                title: 'Leadership Directory',
-                desc: 'View provincial and branch executives with their roles and responsibilities.',
-                icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-              },
-              {
-                title: 'Support System',
-                desc: 'Submit complaints, report issues, or give suggestions directly to leadership.',
-                icon: 'M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z',
-              },
-              {
-                title: 'Multi-Branch',
-                desc: 'Manage all MZYS branches from one platform with branch-specific data.',
-                icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-              },
-            ].map((feature) => (
+            {features.map((feature) => (
               <BorderGlow
                 key={feature.title}
                 glowColor="224 70% 55%"
@@ -108,21 +73,12 @@ export default function Home() {
                 colors={['#3A6CF6', '#0A1F5C', '#5B8DEF']}
               >
                 <div className="p-6">
-                  <div className="w-10 h-10 rounded-lg bg-mzys-primary/20 flex items-center justify-center mb-4">
-                    <svg
-                      className="w-5 h-5 text-mzys-primary"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d={feature.icon}
-                      />
-                    </svg>
-                  </div>
+                  <GlassIcon
+                    icon={<feature.icon className="w-[1.2em] h-[1.2em]" />}
+                    label={feature.title}
+                    active
+                  />
+                  <div className="mt-3" />
                   <h3 className="text-lg font-semibold text-white">{feature.title}</h3>
                   <p className="mt-2 text-sm text-mzys-gray-400">{feature.desc}</p>
                 </div>
@@ -131,8 +87,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <SectionDivider accent="white" label="Features" />
 
       <section id="special-activities" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG, contain: 'layout style' }}>
         <div className="absolute inset-0 z-0">
@@ -165,8 +119,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <SectionDivider accent="white" label="Teams" />
 
       <section id="excos" className="relative py-20 overflow-hidden" style={{ background: '#0F172A', contain: 'layout style' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -220,8 +172,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <SectionDivider accent="white" label="Excos" />
 
       <section id="activities" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG, contain: 'layout style' }}>
         <div className="absolute inset-0 z-0">
@@ -338,8 +288,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <SectionDivider accent="white" label="Activities" />
 
       <section id="join" className="relative py-32 overflow-hidden" style={{ background: SECTION_BG, contain: 'layout style' }}>
         <div className="absolute inset-0 z-0">

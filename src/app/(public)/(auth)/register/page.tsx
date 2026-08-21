@@ -108,6 +108,11 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-mzys-gray-50 px-4 pt-28 pb-16">
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
+          <img
+            src="/images/main-mzys-logo.png"
+            alt="MZYS"
+            className="w-32 h-auto object-contain mx-auto mb-4"
+          />
           <h1 className="text-2xl font-bold text-mzys-navy">Join MZYS</h1>
           <p className="mt-2 text-sm text-mzys-gray-500">
             {step === 'form'
