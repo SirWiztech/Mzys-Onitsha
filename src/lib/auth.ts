@@ -63,15 +63,21 @@ export async function setSession(userId: string): Promise<void> {
 }
 
 export async function getSession(): Promise<User | null> {
-  const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
-  if (!token) return null;
-  const payload = verifySessionToken(token);
-  if (!payload) return null;
-  const users = await readData<User>(USERS_FILE);
-  const user = users.find((u) => u.id === payload.userId) ?? null;
-  if (user && user.status === 'blocked') return null;
-  return user;
+  try {
+    const store = await cookies();
+    const token = store.get(SESSION_COOKIE)?.value;
+    if (!token) return null;
+    const payload = verifySessionToken(token);
+    if (!payload) return null;
+    const users = await readData<User>(USERS_FILE);
+    const user = users.find((u) => u.id === payload.userId) ?? null;
+    if (user && user.status === 'blocked') return null;
+    return user;
+  } catch (err) {
+    console.error('[auth] getSession() error:', err instanceof Error ? err.message : String(err));
+    if (err instanceof Error && err.stack) console.error('[auth] Stack:', err.stack);
+    return null;
+  }
 }
 
 export async function clearSession(): Promise<void> {

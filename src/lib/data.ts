@@ -16,10 +16,15 @@ function parseData<T>(value: unknown): T {
 
 export async function readData<T>(filename: string): Promise<T[]> {
   const table = tableName(filename);
-  const rows = await query<{ data: string | object }>(
-    `SELECT \`data\` FROM \`${table}\` ORDER BY \`row_id\` ASC`
-  );
-  return rows.map((r) => parseData<T>(r.data));
+  try {
+    const rows = await query<{ data: string | object }>(
+      `SELECT \`data\` FROM \`${table}\` ORDER BY \`row_id\` ASC`
+    );
+    return rows.map((r) => parseData<T>(r.data));
+  } catch (err) {
+    console.error(`[data] readData('${filename}') failed on table '${table}':`, err instanceof Error ? err.message : String(err));
+    return [];
+  }
 }
 
 export async function writeData<T>(filename: string, data: T[]): Promise<void> {
