@@ -1,5 +1,10 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
+import type { RowDataPacket } from 'mysql2/promise';
+
+interface CountRow extends RowDataPacket {
+  n: number;
+}
 
 const TABLES = [
   'users',
@@ -82,7 +87,7 @@ export async function runMigrations(): Promise<void> {
         .sort();
 
       for (const file of files) {
-        const [applied] = await conn.query<{ n: number }[]>(
+        const [applied] = await conn.query<CountRow[]>(
           `SELECT COUNT(*) AS n FROM \`schema_migrations\` WHERE \`name\` = ?`,
           [file]
         );
@@ -116,7 +121,7 @@ export async function runMigrations(): Promise<void> {
       const file = join(dataDir, `${table}.json`);
       if (!existsSync(file)) continue;
 
-      const [countRows] = await conn.query<{ n: number }[]>(
+      const [countRows] = await conn.query<CountRow[]>(
         `SELECT COUNT(*) AS n FROM \`${table}\``
       );
       const n = Number(countRows[0]?.n);
