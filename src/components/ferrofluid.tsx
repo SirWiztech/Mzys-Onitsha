@@ -253,7 +253,9 @@ const Ferrofluid: React.FC<FerrofluidProps> = (props) => {
     if (!container) return;
 
     const renderer = new Renderer({
-      dpr: dpr ?? Math.min(window.devicePixelRatio || 1, 2),
+      // Fullscreen fragment shader: cap at 1.5 dpr — rendering at devicePixelRatio 2
+      // quadruples fragment work for a barely-visible quality gain.
+      dpr: dpr ?? Math.min(window.devicePixelRatio || 1, 1.5),
       alpha: true,
       antialias: false,
     });

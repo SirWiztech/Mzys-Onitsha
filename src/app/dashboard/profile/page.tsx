@@ -27,15 +27,16 @@ export default function ProfilePage() {
 
   const load = async () => {
     const [m, b, auth] = await Promise.all([
-      fetch('/api/members').then((r) => r.json()),
+      // /api/members/me returns this user's full record (incl. profileImage);
+      // the bulk /api/members payload omits images to stay small.
+      fetch('/api/members/me').then((r) => (r.ok ? r.json() : null)),
       fetch('/api/branches').then((r) => r.json()),
       fetch('/api/auth').then((r) => r.json()),
     ]);
     setBranches(b);
-    const userId = auth.user?.memberId;
-    if (userId) {
-      const myProfile = (m as Member[]).find((x: Member) => x.id === userId);
-      if (myProfile) {
+    if (m) {
+      const myProfile = m as Member;
+      {
         setMember(myProfile);
         setForm({
           firstName: myProfile.firstName,
@@ -47,7 +48,7 @@ export default function ProfilePage() {
           address: myProfile.address,
           cherubSeraph: myProfile.cherubSeraph || '',
         });
-        const myProducts = await fetch(`/api/products?memberId=${userId}`).then((r) => r.json());
+        const myProducts = await fetch(`/api/products?memberId=${myProfile.id}`).then((r) => r.json());
         setProducts(myProducts);
       }
     }

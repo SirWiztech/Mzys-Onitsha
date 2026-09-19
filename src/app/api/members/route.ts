@@ -12,10 +12,17 @@ export async function GET() {
   for (const u of users) {
     if (u.memberId) roleByMember.set(u.memberId, u.role);
   }
-  const enriched = members.map((m) => ({
-    ...m,
-    role: m.role || roleByMember.get(m.id) || ('member' as UserRole),
-  }));
+  // profileImage is stored as a base64 data URI and can be hundreds of KB per
+  // member. It is stripped from the bulk payload — pages that need the current
+  // user's image use /api/members/me instead.
+  const enriched = members.map((m) => {
+    const { profileImage, ...rest } = m;
+    return {
+      ...rest,
+      profileImage: null as string | null,
+      role: m.role || roleByMember.get(m.id) || ('member' as UserRole),
+    };
+  });
   return NextResponse.json(enriched);
 }
 

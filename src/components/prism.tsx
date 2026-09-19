@@ -66,7 +66,9 @@ const Prism = ({
     const INERT = Math.max(0, Math.min(1, inertia || 0.12));
 
     const isCoarse = typeof window !== 'undefined' && !!window.matchMedia?.('(hover: none), (pointer: coarse)').matches;
-    const dpr = Math.min(isCoarse ? 1.5 : 2, window.devicePixelRatio || 1);
+    // 64-step raymarch fragment shader: cap dpr at 1.5 — 2x dpr quadruples
+    // per-frame fragment cost for a barely-visible quality gain.
+    const dpr = Math.min(isCoarse ? 1.25 : 1.5, window.devicePixelRatio || 1);
     const renderer = new Renderer({
       dpr,
       alpha: transparent,

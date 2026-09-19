@@ -333,7 +333,21 @@ const GlobalSpotlight = ({
     document.body.appendChild(spotlight);
     spotlightRef.current = spotlight;
 
+    let rafId = 0;
+    let lastEvent: MouseEvent | null = null;
+
+    // rAF-throttle: this handler previously did N getBoundingClientRect calls
+    // plus several gsap tweens on EVERY mousemove — a big layout-thrash cost.
     const handleMouseMove = (e: MouseEvent) => {
+      lastEvent = e;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        if (lastEvent) processMouseMove(lastEvent);
+      });
+    };
+
+    const processMouseMove = (e: MouseEvent) => {
       if (!spotlightRef.current || !gridRef.current) return;
 
       const section = gridRef.current.closest('.bento-section');
@@ -415,10 +429,11 @@ const GlobalSpotlight = ({
       }
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove, { passive: true });
     document.addEventListener('mouseleave', handleMouseLeave);
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseleave', handleMouseLeave);
       spotlightRef.current?.parentNode?.removeChild(spotlightRef.current);

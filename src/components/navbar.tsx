@@ -54,9 +54,21 @@ function isActive(href: string, match?: string, pathname?: string): boolean {
 function useScrollState() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      // rAF-throttle: setScrolled(true/false) otherwise runs on every scroll
+      // frame, re-rendering the whole navbar + framer-motion tree.
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        setScrolled(window.scrollY > 10);
+      });
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
   return scrolled;
 }

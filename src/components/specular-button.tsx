@@ -128,7 +128,7 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
     if (!btn || !fx) return;
 
     const isCoarse = !!window.matchMedia?.('(hover: none), (pointer: coarse)').matches;
-    const dpr = Math.min(window.devicePixelRatio || 1, isCoarse ? 1.5 : 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, isCoarse ? 1.25 : 1.5);
     const renderer = new Renderer({ alpha: true, premultipliedAlpha: true, antialias: false, dpr });
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, 0);
@@ -198,7 +198,10 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
       }
       const t = Math.max(0, 1 - dist / Math.max((propsRef.current.proximity as number) ?? 250, 1));
       proximityT = t * t * (3 - 2 * t);
-      if (proximityT > 0.0005 && !raf) raf = requestAnimationFrame(update);
+      // Wake the render loop only when the pointer is actually near the button;
+      // with followMouse every instance previously re-rendered on ANY window
+      // pointermove, even when fully idle and offscreen.
+      if (proximityT > 0.0005 && visibleRef.current && !raf) raf = requestAnimationFrame(update);
     };
     window.addEventListener('pointermove', onPointerMove, { passive: true });
 
@@ -206,6 +209,7 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
     let idleAngle = 2.4;
     let bright = 0;
     let last = performance.now();
+    const visibleRef = { current: true };
 
     const lineC = new Color();
     const baseC = new Color();
@@ -245,9 +249,9 @@ const SpecularButton: React.FC<SpecularButtonProps> = ({
     };
     raf = requestAnimationFrame(update);
 
-    let visible = true;
     const io = new IntersectionObserver((entries) => {
-      visible = entries.some((e) => e.isIntersecting);
+      const visible = entries.some((e) => e.isIntersecting);
+      visibleRef.current = visible;
       if (visible && !raf) raf = requestAnimationFrame(update);
       else if (!visible && raf) { cancelAnimationFrame(raf); raf = 0; }
     });

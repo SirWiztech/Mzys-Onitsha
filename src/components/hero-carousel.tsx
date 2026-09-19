@@ -62,6 +62,15 @@ export default function HeroCarousel() {
     return () => clearInterval(timer);
   }, [next]);
 
+  // Preload the next slide's image so transitions never stall mid-fade
+  // on large JPEGs.
+  useEffect(() => {
+    const nextIndex = (current + 1) % slides.length;
+    const img = new Image();
+    img.src = encodeURI(slides[nextIndex].image);
+    return () => { img.src = ''; };
+  }, [current]);
+
   const slide = slides[current];
 
   return (

@@ -14,8 +14,9 @@ import GlassIcon from '@/components/glass-icon';
 import SpecularButton from '@/components/specular-button';
 import CardSwap, { Card } from '@/components/card-swap';
 import ChromaGrid from '@/components/chroma-grid';
-import ProfileCard from '@/components/profile-card';
-import Prism from '@/components/prism'; 
+import ExcoGrid from '@/components/exco-grid';
+import HideScrollbar from '@/components/hide-scrollbar';
+import Prism from '@/components/prism';
 
 const SECTION_BG = '#0B1120';
 
@@ -31,6 +32,7 @@ const features = [
 export default function Home() {
   return (
     <div className="flex flex-col">
+      <HideScrollbar />
       <HeroCarousel />
 
       <section id="features" className="relative py-20 overflow-hidden" style={{ background: SECTION_BG, contain: 'layout style' }}>
@@ -128,48 +130,7 @@ export default function Home() {
               Meet the dedicated team steering MZYS forward.
             </p>
           </div>
-          <div className="flex flex-wrap justify-center gap-6">
-            <ProfileCard
-              name="Bro. John Okafor"
-              title="President"
-              unit="Presidential"
-              avatarUrl="/images/mzys-president.jpg"
-              status="Active"
-              behindGlowColor="rgba(59, 130, 246, 0.67)"
-            />
-            <ProfileCard
-              name="Sis. Chiamaka Nwosu"
-              title="Vice President"
-              unit="Administration"
-              avatarUrl="/images/sis-chiamaka.jpg"
-              status="Active"
-              behindGlowColor="rgba(139, 92, 246, 0.67)"
-            />
-            <ProfileCard
-              name="Bro. Joel Okonkwo"
-              title="General Secretary"
-              unit="Secretariat"
-              avatarUrl="/images/bro-joel.jpg"
-              status="Active"
-              behindGlowColor="rgba(16, 185, 129, 0.67)"
-            />
-            <ProfileCard
-              name="Sis. Precious Eze"
-              title="Financial Secretary"
-              unit="Finance"
-              avatarUrl="/images/Precious-pray.jpg"
-              status="Active"
-              behindGlowColor="rgba(245, 158, 11, 0.67)"
-            />
-            <ProfileCard
-              name="Bro. Michael Ugwu"
-              title="Media Director"
-              unit="Media & Publicity"
-              avatarUrl="/images/mzys-media-team.jpg"
-              status="Active"
-              behindGlowColor="rgba(6, 182, 212, 0.67)"
-            />
-          </div>
+          <ExcoGrid />
         </div>
       </section>
 
