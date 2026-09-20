@@ -7,6 +7,7 @@ import Select from '@/components/ui/select';
 import Button from '@/components/ui/button';
 import Link from 'next/link';
 import type { Branch } from '@/lib/types';
+import { PasswordStrengthMeter, PasswordMatchIndicator } from '@/components/password-strength';
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -24,6 +25,7 @@ export default function RegisterPage() {
     address: '',
   });
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [branchError, setBranchError] = useState(false);
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -33,8 +35,20 @@ export default function RegisterPage() {
 
   useEffect(() => {
     fetch('/api/branches')
-      .then((res) => res.json())
-      .then((data) => setBranches(data));
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setBranches(data);
+          setBranchError(false);
+        } else {
+          // DB reachable but no branches seeded (or an error object returned)
+          setBranchError(true);
+        }
+      })
+      .catch(() => setBranchError(true));
   }, []);
 
   const update = (field: string, value: string) =>
@@ -192,15 +206,29 @@ export default function RegisterPage() {
                 />
               </div>
 
-              <Select
-                id="branchId"
-                label="Branch"
-                value={form.branchId}
-                onChange={(e) => update('branchId', e.target.value)}
-                options={branches.map((b) => ({ value: b.id, label: b.name }))}
-                placeholder="Select your branch"
-                required
-              />
+              {branchError ? (
+                <div>
+                  <label htmlFor="branchId" className="text-sm font-medium text-mzys-gray-700">
+                    Branch
+                  </label>
+                  <p className="mt-1.5 text-sm bg-amber-50 text-amber-800 border border-amber-200 px-3 py-2.5 rounded-lg">
+                    Branches are temporarily unavailable (list failed to load). Please try
+                    refreshing the page.
+                  </p>
+                </div>
+              ) : (
+                <Select
+                  id="branchId"
+                  label="Branch"
+                  value={form.branchId}
+                  onChange={(e) => update('branchId', e.target.value)}
+                  options={branches.map((b) => ({ value: b.id, label: b.name }))}
+                  placeholder={
+                    branches.length === 0 ? 'Loading branches...' : 'Select your branch'
+                  }
+                  required
+                />
+              )}
 
               <Select
                 id="cherubSeraph"
@@ -230,27 +258,36 @@ export default function RegisterPage() {
                 onChange={(e) => update('address', e.target.value)}
               />
 
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  id="password"
-                  label="Password"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Min. 6 characters"
-                  value={form.password}
-                  onChange={(e) => update('password', e.target.value)}
-                  required
-                />
-                <Input
-                  id="confirmPassword"
-                  label="Confirm Password"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Repeat password"
-                  value={form.confirmPassword}
-                  onChange={(e) => update('confirmPassword', e.target.value)}
-                  required
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Input
+                    id="password"
+                    label="Password"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="Min. 6 characters"
+                    value={form.password}
+                    onChange={(e) => update('password', e.target.value)}
+                    required
+                  />
+                  <PasswordStrengthMeter password={form.password} />
+                </div>
+                <div>
+                  <Input
+                    id="confirmPassword"
+                    label="Confirm Password"
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="Repeat password"
+                    value={form.confirmPassword}
+                    onChange={(e) => update('confirmPassword', e.target.value)}
+                    required
+                  />
+                  <PasswordMatchIndicator
+                    password={form.password}
+                    confirmPassword={form.confirmPassword}
+                  />
+                </div>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>

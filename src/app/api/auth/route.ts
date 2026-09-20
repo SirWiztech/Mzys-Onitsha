@@ -11,7 +11,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const user = await authenticateUser(email, password);
+  let user: Awaited<ReturnType<typeof authenticateUser>>;
+  try {
+    user = await authenticateUser(email, password);
+  } catch (err) {
+    // DB unreachable/unseeded — this is a server problem, not bad credentials.
+    console.error('[api/auth] login failed (database error):', err instanceof Error ? err.message : String(err));
+    return NextResponse.json(
+      { error: 'Server database unavailable. Please try again shortly.' },
+      { status: 503 }
+    );
+  }
   if (!user) {
     return NextResponse.json(
       { error: 'Invalid email or password' },

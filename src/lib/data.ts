@@ -22,8 +22,18 @@ export async function readData<T>(filename: string): Promise<T[]> {
     );
     return rows.map((r) => parseData<T>(r.data));
   } catch (err) {
-    console.error(`[data] readData('${filename}') failed on table '${table}':`, err instanceof Error ? err.message : String(err));
-    return [];
+    // Distinguish "table exists but empty" (fine) from a real DB failure.
+    // Swallowing every error here made an unreachable/unseeded database look
+    // exactly like "no such user" — login then reported the misleading
+    // "Invalid email or password" instead of a server problem.
+    const msg = err instanceof Error ? err.message : String(err);
+    const isMissingTable = typeof err === 'object' && err !== null && 'code' in err && (err as { code?: string }).code === 'ER_NO_SUCH_TABLE';
+    if (isMissingTable) {
+      console.warn(`[data] readData('${filename}'): table '${table}' does not exist yet (returning empty)`);
+      return [];
+    }
+    console.error(`[data] readData('${filename}') failed on table '${table}':`, msg);
+    throw new Error(`Database unavailable while reading '${table}': ${msg}`);
   }
 }
 
