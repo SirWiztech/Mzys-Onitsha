@@ -170,12 +170,25 @@ const ChromaGrid = ({ items, className = '', radius = 300, damping = 0.45, fadeO
             }}
           />
           <div className="relative z-10 flex-1 p-[10px] box-border">
-            <img
-              src={c.image}
-              alt={c.title}
-              loading="lazy"
-              className="w-full h-[200px] object-cover rounded-[10px]"
-            />
+            {/* object-contain so the full photo is always visible (portrait
+              photos like Mzys-Trumpeters.jpg were cropped top & bottom by
+              object-cover). A blurred copy of the same image fills the box
+              behind it so portrait/square gaps look intentional. */}
+            <div className="relative w-full h-[200px] rounded-[10px] overflow-hidden">
+              <img
+                src={c.image}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover scale-125 blur-2xl opacity-60"
+              />
+              <img
+                src={c.image}
+                alt={c.title}
+                loading="lazy"
+                className="relative w-full h-full object-contain"
+              />
+            </div>
           </div>
           <footer className="relative z-10 p-3 text-white font-sans flex flex-col gap-1">
             <div className="flex items-center justify-between">

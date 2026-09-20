@@ -8,7 +8,7 @@ import Button from '@/components/ui/button';
 import Modal from '@/components/ui/modal';
 import { Crown } from 'lucide-react';
 import type { Leadership, Member, Branch } from '@/lib/types';
-import { POSITION_ORDER } from '@/lib/leadership';
+import { POSITION_ORDER, STATIC_IMAGES } from '@/lib/leadership';
 
 const positionByEmail = new Map(POSITION_ORDER.map((p) => [p.email, p]));
 
@@ -108,8 +108,12 @@ export default function LeadershipPage() {
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm overflow-hidden shrink-0 ${
                         isPresident ? 'bg-gradient-to-br from-amber-400 to-amber-600' : 'gradient-primary'
                       }`}>
-                        {member.profileImage ? (
-                          <img src={member.profileImage} alt="" className="w-full h-full object-cover" />
+                        {member.profileImage || STATIC_IMAGES[member.email] ? (
+                          <img
+                            src={member.profileImage || STATIC_IMAGES[member.email]}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
                         ) : (
                           `${member.firstName[0]}${member.lastName[0]}`
                         )}

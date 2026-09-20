@@ -1,24 +1,7 @@
 import { NextResponse } from 'next/server';
 import { readData } from '@/lib/data';
-import { POSITION_ORDER } from '@/lib/leadership';
+import { POSITION_ORDER, STATIC_IMAGES } from '@/lib/leadership';
 import type { Member, User, UserRole } from '@/lib/types';
-
-// Static photo files shipped in public/images (named after each exco).
-// The dashboard shows the same people but falls back to initials when
-// profileImage is null — on the landing page we fall back to these files instead.
-const STATIC_IMAGES: Record<string, string> = {
-  'eberegodspower@gmail.com': '/images/Nnamdi Godspower.jpg',
-  'okorieconfidence@mzys.com': '/images/Okorie Confidence.jpg',
-  'ndukachukwuma13@gmail.com': '/images/Chukwuma  Nduka.jpg',
-  'ogbonnaagbaielijah@gmail.com': '/images/Agbai.jpg',
-  'preciousagbo1999@gmail.com': '/images/sis-precious-agbo.jpg',
-  'emmagod40099@gmail.com': '/images/Chibuogwu Emmanuel.jpg',
-  'achonuchidera@gmail.com': '/images/Achonu Chidera.jpg',
-  'anyanwupro@gmail.com': '/images/Anyanwu Samuel.jpg',
-  'udechukwuruth84@gmail.com': '/images/Ruth Udechukwu.jpg',
-  'mamaoluchukwu100@gmail.com': '/images/Mama Friday.jpg',
-  'ogarakuugochukwu@mzys.com': '/images/ugochukwu ogaraku.jpg',
-};
 
 const GLOW_COLORS = [
   'rgba(59, 130, 246, 0.67)',

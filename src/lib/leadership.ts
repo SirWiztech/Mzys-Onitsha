@@ -18,3 +18,21 @@ export const POSITION_ORDER: { email: string; position: string; order: number }[
 export function positionByEmail(email: string): string | undefined {
   return POSITION_ORDER.find((p) => p.email === email)?.position;
 }
+
+// Static photo files shipped in public/images (named after each exco).
+// profileImage in the DB is null for most excos, so the landing page and the
+// dashboard leadership page both fall back to these. Update here when an exco
+// sends a new photo — it applies everywhere at once.
+export const STATIC_IMAGES: Record<string, string> = {
+  'eberegodspower@gmail.com': '/images/Nnamdi Godspower.jpg',
+  'okorieconfidence@mzys.com': '/images/Okorie Confidence.jpg',
+  'ndukachukwuma13@gmail.com': '/images/Chukwuma  Nduka.jpg',
+  'ogbonnaagbaielijah@gmail.com': '/images/Agbai.jpg',
+  'preciousagbo1999@gmail.com': '/images/precious-nzube-agbo.png',
+  'emmagod40099@gmail.com': '/images/Chibuogwu Emmanuel.jpg',
+  'achonuchidera@gmail.com': '/images/Achonu Chidera.jpg',
+  'anyanwupro@gmail.com': '/images/Anyanwu Samuel.jpg',
+  'udechukwuruth84@gmail.com': '/images/Ruth Udechukwu.jpg',
+  'mamaoluchukwu100@gmail.com': '/images/Mama Friday.jpg',
+  'ogarakuugochukwu@mzys.com': '/images/ugochukwu ogaraku.jpg',
+};

@@ -116,7 +116,10 @@ export default function Home() {
               Join a team and serve in your area of passion and gifting.
             </p>
           </div>
-          <div className="h-[700px] relative">
+          {/* min-height instead of fixed height: on mobile the 7 cards stack
+              one per row (~2000px) — a fixed h-[700px] clipped everything past
+              the first rows under the section's overflow-hidden. */}
+          <div className="relative min-h-[700px]">
             <ChromaGrid />
           </div>
         </div>
