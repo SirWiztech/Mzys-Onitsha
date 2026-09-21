@@ -34,7 +34,7 @@ const ChromaGrid = ({ items, className = '', radius = 300, damping = 0.45, fadeO
 
   const demo: ChromaItem[] = [
     {
-      image: '/images/mzys-group-two.jpg',
+      image: '/images/G-force.jpg',
       title: 'G-Force',
       subtitle: 'Evangelism & Outreach',
       handle: 'Join Team',
@@ -88,7 +88,25 @@ const ChromaGrid = ({ items, className = '', radius = 300, damping = 0.45, fadeO
       url: '#join-prayer',
     },
     {
-      image: '/images/bro-joel.jpg',
+      image: '/images/bible_study.jpg',
+      title: 'Tuesday Bible Study',
+      subtitle: 'Midweek Word & Group Discussion',
+      handle: 'Join Team',
+      borderColor: '#6366F1',
+      gradient: 'linear-gradient(160deg,#6366F1,#0B1120)',
+      url: '#join-biblestudy',
+    },
+    {
+      image: '/images/Phenomenal Ladies in Christ.jpg',
+      title: 'Phenomenal Ladies in Christ',
+      subtitle: "Ladies' Fellowship, Mentorship & Growth",
+      handle: 'Join Team',
+      borderColor: '#D946EF',
+      gradient: 'linear-gradient(200deg,#D946EF,#0B1120)',
+      url: '#join-ladies',
+    },
+    {
+      image: '/images/sports_recreation.jpg',
       title: 'Sports & Recreation',
       subtitle: 'Athletics, Games & Fellowship',
       handle: 'Join Team',
@@ -191,10 +209,10 @@ const ChromaGrid = ({ items, className = '', radius = 300, damping = 0.45, fadeO
             </div>
           </div>
           <footer className="relative z-10 p-3 text-white font-sans flex flex-col gap-1">
-            <div className="flex items-center justify-between">
-              <h3 className="m-0 text-[1.05rem] font-semibold">{c.title}</h3>
+            <div className="flex items-center justify-between gap-2 flex-nowrap">
+              <h3 className="m-0 text-[1.05rem] font-semibold min-w-0">{c.title}</h3>
               {c.handle && (
-                <span className="text-[0.85rem] font-medium text-white/90 bg-white/15 px-3 py-1 rounded-full">
+                <span className="shrink-0 whitespace-nowrap text-[0.85rem] font-medium text-white/90 bg-white/15 px-3 py-1 rounded-full">
                   {c.handle}
                 </span>
               )}

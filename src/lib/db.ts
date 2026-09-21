@@ -10,7 +10,11 @@ let poolPromise: Promise<import('mysql2/promise').Pool> | null = null;
 function createPool(): Promise<import('mysql2/promise').Pool> {
   return import('mysql2/promise').then((mysql) => {
     const DB_HOST = process.env.DB_HOST || '127.0.0.1';
-    const DB_PORT = Number(process.env.DB_PORT || 3306);
+    // Wasmer Edge managed databases listen on a custom assigned port (e.g. 20184),
+    // NOT 3306. If DB_PORT is missing but the host is a Wasmer DB endpoint,
+    // fall back to the Wasmer port so a misconfigured deployment still connects.
+    const DEFAULT_PORT = /wasmernet\.com$/i.test(DB_HOST) ? 20184 : 3306;
+    const DB_PORT = Number(process.env.DB_PORT || DEFAULT_PORT);
     const DB_USER = process.env.DB_USERNAME || 'root';
     const DB_PASSWORD = process.env.DB_PASSWORD || '';
     const DB_NAME = process.env.DB_NAME || 'mzys_onitsha';
@@ -52,16 +56,27 @@ export async function queryOne<T>(sql: string, params: unknown[] = []): Promise<
 }
 
 export async function testConnection(): Promise<boolean> {
+  const result = await testConnectionDetailed();
+  return result.ok;
+}
+
+/** Like testConnection but returns the underlying error for diagnostics. */
+export async function testConnectionDetailed(): Promise<{
+  ok: boolean;
+  error: string | null;
+  code: string | null;
+}> {
   try {
     const p = await getPool();
     const conn = await p.getConnection();
     console.log('[db] ✅ Connection successful');
     conn.release();
-    return true;
+    return { ok: true, error: null, code: null };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error(`[db] ❌ Connection failed: ${msg}`);
-    return false;
+    const code = (err as { code?: string } | null)?.code ?? null;
+    console.error(`[db] ❌ Connection failed: ${code ? `${code} ` : ''}${msg}`);
+    return { ok: false, error: msg, code };
   }
 }
 
