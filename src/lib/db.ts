@@ -1,56 +1,33 @@
 /**
- * Database module — lazy-loads mysql2/promise so the server never crashes
- * at import time if the native binary is missing or incompatible.
- * On Wasmer, mysql2 native binaries may not match the container's architecture,
- * so we defer the import to first query.
+ * Database module.
+ *
+ * mysql2 is imported STATICALLY on purpose: it is pure JS (no native binaries),
+ * and bundling it inline into the server chunks makes the deployed bundle
+ * self-contained. (Runtime resolution — dynamic import() or createRequire —
+ * breaks in the Anybuild/next-bundle deploy environment: the build-time
+ * optimizer prunes the package from node_modules and hashed external chunks
+ * ("mysql2-<hash>/promise") fail to resolve.)
  */
 
-import { createRequire } from 'node:module';
+import mysql from 'mysql2/promise';
 
 let poolPromise: Promise<import('mysql2/promise').Pool> | null = null;
 
-type MysqlModule = typeof import('mysql2/promise');
-
-let mysqlModule: MysqlModule | null = null;
-
-/**
- * Load mysql2 at runtime via createRequire with an obfuscated specifier so the
- * bundler cannot rewrite it. Turbopack's external-chunk require of a hashed
- * specifier ("mysql2-<hash>/promise") breaks in the Anybuild/next-bundle deploy
- * environment, so we bypass bundler externals entirely and resolve the package
- * from node_modules the same way plain Node would.
- */
-function loadMysql(): MysqlModule {
-  if (mysqlModule) return mysqlModule;
-  const specifier = 'mysql2' + '/promise'; // string concat defeats static analysis
-  const errors: string[] = [];
-  const bases = [import.meta.url, process.cwd() + '/', process.cwd() + '/.next-bundle/'];
-  for (const base of bases) {
-    try {
-      mysqlModule = createRequire(base)(specifier) as MysqlModule;
-      return mysqlModule;
-    } catch (err) {
-      errors.push(err instanceof Error ? err.message : String(err));
-    }
-  }
-  throw new Error(`Failed to load mysql2/promise: ${errors.join(' | ')}`);
-}
-
 function createPool(): Promise<import('mysql2/promise').Pool> {
-  return Promise.resolve(loadMysql()).then((mysql) => {
-    const DB_HOST = process.env.DB_HOST || '127.0.0.1';
-    // Wasmer Edge managed databases listen on a custom assigned port (e.g. 20184),
-    // NOT 3306. If DB_PORT is missing but the host is a Wasmer DB endpoint,
-    // fall back to the Wasmer port so a misconfigured deployment still connects.
-    const DEFAULT_PORT = /wasmernet\.com$/i.test(DB_HOST) ? 20184 : 3306;
-    const DB_PORT = Number(process.env.DB_PORT || DEFAULT_PORT);
-    const DB_USER = process.env.DB_USERNAME || 'root';
-    const DB_PASSWORD = process.env.DB_PASSWORD || '';
-    const DB_NAME = process.env.DB_NAME || 'mzys_onitsha';
+  const DB_HOST = process.env.DB_HOST || '127.0.0.1';
+  // Wasmer Edge managed databases listen on a custom assigned port (e.g. 20184),
+  // NOT 3306. If DB_PORT is missing but the host is a Wasmer DB endpoint,
+  // fall back to the Wasmer port so a misconfigured deployment still connects.
+  const DEFAULT_PORT = /wasmernet\.com$/i.test(DB_HOST) ? 20184 : 3306;
+  const DB_PORT = Number(process.env.DB_PORT || DEFAULT_PORT);
+  const DB_USER = process.env.DB_USERNAME || 'root';
+  const DB_PASSWORD = process.env.DB_PASSWORD || '';
+  const DB_NAME = process.env.DB_NAME || 'mzys_onitsha';
 
-    console.log(`[db] Creating pool → host=${DB_HOST} port=${DB_PORT} user=${DB_USER} db=${DB_NAME}`);
+  console.log(`[db] Creating pool → host=${DB_HOST} port=${DB_PORT} user=${DB_USER} db=${DB_NAME}`);
 
-    return mysql.createPool({
+  return Promise.resolve(
+    mysql.createPool({
       host: DB_HOST,
       port: DB_PORT,
       user: DB_USER,
@@ -64,8 +41,12 @@ function createPool(): Promise<import('mysql2/promise').Pool> {
       charset: 'utf8mb4',
       dateStrings: true,
       connectTimeout: 10000,
-    });
-  });
+      // Keep long-lived pooled connections healthy across NAT/idle timeouts —
+      // without this, connections idle >60s get reset (ECONNRESET) on first use.
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 10000,
+    })
+  );
 }
 
 async function getPool(): Promise<import('mysql2/promise').Pool> {
@@ -73,10 +54,24 @@ async function getPool(): Promise<import('mysql2/promise').Pool> {
   return poolPromise;
 }
 
+// Transient connection-class errors: a stale pooled connection was reset by the
+// network. The pool discards the dead connection, so one retry succeeds.
+const RETRYABLE_CODES = new Set(['ECONNRESET', 'EPIPE', 'ETIMEDOUT', 'PROTOCOL_CONNECTION_LOST']);
+
 export async function query<T>(sql: string, params: unknown[] = []): Promise<T[]> {
   const p = await getPool();
-  const [rows] = await p.query(sql, params);
-  return rows as T[];
+  try {
+    const [rows] = await p.query(sql, params);
+    return rows as T[];
+  } catch (err) {
+    const code = (err as { code?: string } | null)?.code ?? '';
+    if (RETRYABLE_CODES.has(code)) {
+      console.warn(`[db] ${code} on pooled connection — retrying once`);
+      const [rows] = await p.query(sql, params);
+      return rows as T[];
+    }
+    throw err;
+  }
 }
 
 export async function queryOne<T>(sql: string, params: unknown[] = []): Promise<T | null> {

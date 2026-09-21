@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { createRequire } from 'node:module';
+import mysql from 'mysql2/promise';
 import type { RowDataPacket } from 'mysql2/promise';
 
 interface CountRow extends RowDataPacket {
@@ -33,34 +33,8 @@ function findSubdir(name: string): string | null {
   return null;
 }
 
-type MysqlModule = typeof import('mysql2/promise');
-
-let mysqlModule: MysqlModule | null = null;
-
-/**
- * Runtime require of mysql2 with a bundler-opaque specifier — same rationale as
- * src/lib/db.ts: Turbopack's hashed external require ("mysql2-<hash>/promise")
- * fails in the Anybuild/next-bundle deploy environment.
- */
-function loadMysql(): MysqlModule {
-  if (mysqlModule) return mysqlModule;
-  const specifier = 'mysql2' + '/promise'; // string concat defeats static analysis
-  const errors: string[] = [];
-  const bases = [import.meta.url, process.cwd() + '/', process.cwd() + '/.next-bundle/'];
-  for (const base of bases) {
-    try {
-      mysqlModule = createRequire(base)(specifier) as MysqlModule;
-      return mysqlModule;
-    } catch (err) {
-      errors.push(err instanceof Error ? err.message : String(err));
-    }
-  }
-  throw new Error(`Failed to load mysql2/promise: ${errors.join(' | ')}`);
-}
-
 export async function runMigrations(): Promise<void> {
-  // Runtime require so bundlers never rewrite this to a hashed external chunk.
-  const mysql = loadMysql();
+  // mysql2 is statically imported (bundled inline) — see rationale in src/lib/db.ts.
 
   const dbName = process.env.DB_NAME || 'mzys_onitsha';
   const host = process.env.DB_HOST || '127.0.0.1';
@@ -85,7 +59,7 @@ export async function runMigrations(): Promise<void> {
     } catch (useErr) {
       const e = useErr as { errno?: number; code?: string; sqlMessage?: string };
       if (e.code === 'ER_BAD_DB_ERROR') {
-        const created = await tryCreateDatabase(conn, mysql, dbName);
+        const created = await tryCreateDatabase(conn, dbName);
         if (!created) {
           console.error(`[migrations] Database "${dbName}" does not exist and could not be created.`);
           throw useErr;
@@ -179,7 +153,6 @@ export async function runMigrations(): Promise<void> {
 
 async function tryCreateDatabase(
   conn: { query: (sql: string) => Promise<unknown> },
-  mysql: typeof import('mysql2/promise'),
   dbName: string
 ): Promise<boolean> {
   try {
