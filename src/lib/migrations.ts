@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { createRequire } from 'node:module';
 import type { RowDataPacket } from 'mysql2/promise';
 
 interface CountRow extends RowDataPacket {
@@ -32,14 +33,39 @@ function findSubdir(name: string): string | null {
   return null;
 }
 
+type MysqlModule = typeof import('mysql2/promise');
+
+let mysqlModule: MysqlModule | null = null;
+
+/**
+ * Runtime require of mysql2 with a bundler-opaque specifier — same rationale as
+ * src/lib/db.ts: Turbopack's hashed external require ("mysql2-<hash>/promise")
+ * fails in the Anybuild/next-bundle deploy environment.
+ */
+function loadMysql(): MysqlModule {
+  if (mysqlModule) return mysqlModule;
+  const specifier = 'mysql2' + '/promise'; // string concat defeats static analysis
+  const errors: string[] = [];
+  const bases = [import.meta.url, process.cwd() + '/', process.cwd() + '/.next-bundle/'];
+  for (const base of bases) {
+    try {
+      mysqlModule = createRequire(base)(specifier) as MysqlModule;
+      return mysqlModule;
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : String(err));
+    }
+  }
+  throw new Error(`Failed to load mysql2/promise: ${errors.join(' | ')}`);
+}
+
 export async function runMigrations(): Promise<void> {
-  // Dynamic import so the native mysql2 binary is never loaded at module import time.
-  // On Wasmer, importing mysql2 at the top level crashes the server process.
-  const mysql = await import('mysql2/promise');
+  // Runtime require so bundlers never rewrite this to a hashed external chunk.
+  const mysql = loadMysql();
 
   const dbName = process.env.DB_NAME || 'mzys_onitsha';
   const host = process.env.DB_HOST || '127.0.0.1';
-  const port = Number(process.env.DB_PORT || 3306);
+  // Match db.ts: Wasmer managed DBs listen on an assigned port, not 3306.
+  const port = Number(process.env.DB_PORT || (/wasmernet\.com$/i.test(host) ? 20184 : 3306));
   const user = process.env.DB_USERNAME || 'root';
   const password = process.env.DB_PASSWORD || '';
 

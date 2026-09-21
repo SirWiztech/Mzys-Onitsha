@@ -5,10 +5,39 @@
  * so we defer the import to first query.
  */
 
+import { createRequire } from 'node:module';
+
 let poolPromise: Promise<import('mysql2/promise').Pool> | null = null;
 
+type MysqlModule = typeof import('mysql2/promise');
+
+let mysqlModule: MysqlModule | null = null;
+
+/**
+ * Load mysql2 at runtime via createRequire with an obfuscated specifier so the
+ * bundler cannot rewrite it. Turbopack's external-chunk require of a hashed
+ * specifier ("mysql2-<hash>/promise") breaks in the Anybuild/next-bundle deploy
+ * environment, so we bypass bundler externals entirely and resolve the package
+ * from node_modules the same way plain Node would.
+ */
+function loadMysql(): MysqlModule {
+  if (mysqlModule) return mysqlModule;
+  const specifier = 'mysql2' + '/promise'; // string concat defeats static analysis
+  const errors: string[] = [];
+  const bases = [import.meta.url, process.cwd() + '/', process.cwd() + '/.next-bundle/'];
+  for (const base of bases) {
+    try {
+      mysqlModule = createRequire(base)(specifier) as MysqlModule;
+      return mysqlModule;
+    } catch (err) {
+      errors.push(err instanceof Error ? err.message : String(err));
+    }
+  }
+  throw new Error(`Failed to load mysql2/promise: ${errors.join(' | ')}`);
+}
+
 function createPool(): Promise<import('mysql2/promise').Pool> {
-  return import('mysql2/promise').then((mysql) => {
+  return Promise.resolve(loadMysql()).then((mysql) => {
     const DB_HOST = process.env.DB_HOST || '127.0.0.1';
     // Wasmer Edge managed databases listen on a custom assigned port (e.g. 20184),
     // NOT 3306. If DB_PORT is missing but the host is a Wasmer DB endpoint,
