@@ -20,6 +20,7 @@ const TABLES = [
   'likes',
   'notifications',
   'otps',
+  'programs',
 ];
 
 function findSubdir(name: string): string | null {

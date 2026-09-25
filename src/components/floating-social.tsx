@@ -1,25 +1,73 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CalendarDays, MessageCircle, X } from 'lucide-react';
+import type { Program } from '@/lib/types';
 
-const yearlyActivities = [
-  { month: 'January', event: 'New Year Thanksgiving & Prayer Kickoff' },
-  { month: 'February', event: 'Annual General Meeting' },
-  { month: 'March', event: 'Youth Conference / Revival Week' },
-  { month: 'April', event: 'Easter Outreach & Community Service' },
-  { month: 'May', event: 'Inter-Branch Sports Competition' },
-  { month: 'June', event: 'Mid-Year Prayer & Fasting' },
-  { month: 'July', event: 'Annual Excursion / Retreat' },
-  { month: 'August', event: 'Skills Acquisition Workshop' },
-  { month: 'September', event: 'Leadership Training Seminar' },
-  { month: 'October', event: 'Music & Drama Festival' },
-  { month: 'November', event: 'Evangelism Marathon / Outreach' },
-  { month: 'December', event: 'End of Year Party & Awards' },
-];
+const HEADINGS = ['S/N', 'Event Type', 'Date', 'Theme', 'Topic', 'Venue', 'Time'];
+
+function ProgramsTable({ rows }: { rows: Program[] }) {
+  if (rows.length === 0) {
+    return <p className="text-sm text-gray-500 py-3">No programs listed yet.</p>;
+  }
+  return (
+    <div className="overflow-x-auto rounded-xl border border-white/10">
+      <table className="w-full text-sm border-collapse min-w-[640px]">
+        <thead>
+          <tr className="bg-white/5 text-left">
+            {HEADINGS.map((h) => (
+              <th
+                key={h}
+                className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-blue-400 whitespace-nowrap"
+              >
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((p) => (
+            <tr key={p.id} className="border-t border-white/5 align-top hover:bg-white/5 transition-colors">
+              <td className="px-3 py-2.5 text-gray-500 tabular-nums">{p.sn}</td>
+              <td className="px-3 py-2.5 text-gray-200 font-medium whitespace-nowrap">{p.eventType}</td>
+              <td className="px-3 py-2.5 text-gray-300 whitespace-nowrap">{p.date || '—'}</td>
+              <td className="px-3 py-2.5 text-gray-300">{p.theme || '—'}</td>
+              <td className="px-3 py-2.5 text-gray-400">{p.topic || '—'}</td>
+              <td className="px-3 py-2.5 text-gray-300">{p.venue || '—'}</td>
+              <td className="px-3 py-2.5 text-gray-300 whitespace-nowrap">{p.time || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export default function FloatingSocial() {
   const [showCalendar, setShowCalendar] = useState(false);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  // Fetch once, on first open.
+  useEffect(() => {
+    if (!showCalendar || programs.length > 0 || loading || error) return;
+    setLoading(true);
+    fetch('/api/programs')
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) setPrograms(data);
+        else setError(true);
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [showCalendar, programs.length, loading, error]);
+
+  const provincial = programs.filter((p) => p.category === 'provincial');
+  const district = programs.filter((p) => p.category === 'district');
 
   return (
     <>
@@ -27,7 +75,7 @@ export default function FloatingSocial() {
         <button
           onClick={() => setShowCalendar(true)}
           className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 hover:scale-110 transition-all duration-200"
-          aria-label="Yearly Activities"
+          aria-label="Programs Calendar"
         >
           <CalendarDays className="w-5 h-5" />
         </button>
@@ -59,13 +107,13 @@ export default function FloatingSocial() {
           onClick={() => setShowCalendar(false)}
         >
           <div
-            className="bg-[#0B1120] border border-white/10 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] overflow-y-auto"
+            className="bg-[#0B1120] border border-white/10 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-5 border-b border-white/10">
+            <div className="flex items-center justify-between p-5 border-b border-white/10 sticky top-0 bg-[#0B1120] z-10">
               <div>
-                <h3 className="text-lg font-bold text-white font-display">Yearly Activities</h3>
-                <p className="text-sm text-gray-400 mt-0.5">MZYS Onitsha annual calendar</p>
+                <h3 className="text-lg font-bold text-white font-display">Programs Calendar</h3>
+                <p className="text-sm text-gray-400 mt-0.5">MZYS Onitsha provincial &amp; district programs</p>
               </div>
               <button
                 onClick={() => setShowCalendar(false)}
@@ -74,18 +122,26 @@ export default function FloatingSocial() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-5 space-y-2">
-              {yearlyActivities.map((a) => (
-                <div
-                  key={a.month}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-                >
-                  <span className="text-xs font-semibold text-blue-400 w-20 shrink-0 pt-0.5">
-                    {a.month}
-                  </span>
-                  <span className="text-sm text-gray-300">{a.event}</span>
-                </div>
-              ))}
+
+            <div className="p-5 space-y-6">
+              {loading && <p className="text-sm text-gray-400 py-4 text-center">Loading calendar…</p>}
+              {error && (
+                <p className="text-sm text-red-400 py-4 text-center">
+                  Could not load the calendar. Please try again later.
+                </p>
+              )}
+              {!loading && !error && (
+                <>
+                  <section>
+                    <h4 className="text-sm font-semibold text-white mb-3">Provincial Programs</h4>
+                    <ProgramsTable rows={provincial} />
+                  </section>
+                  <section>
+                    <h4 className="text-sm font-semibold text-white mb-3">District and Branch Programs</h4>
+                    <ProgramsTable rows={district} />
+                  </section>
+                </>
+              )}
             </div>
           </div>
         </div>

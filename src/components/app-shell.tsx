@@ -25,6 +25,7 @@ import {
   Bell,
   Rows,
   Receipt,
+  CalendarCog,
 } from 'lucide-react';
 
 type NavItem = {
@@ -43,6 +44,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard/members', label: 'Members', icon: Users, minRole: 'exco' },
   { href: '/dashboard/members/add', label: 'Add Member', icon: UserPlus, minRole: 'exco' },
   { href: '/dashboard/events', label: 'Events', icon: CalendarDays },
+  { href: '/dashboard/programs', label: 'Programs Calendar', icon: CalendarCog, minRole: 'superadmin' },
   { href: '/dashboard/leadership', label: 'Leadership', icon: Shield },
   { href: '/dashboard/complaints', label: 'Support', icon: MessageCircle },
   { href: '/dashboard/profile', label: 'My Products', icon: Package },

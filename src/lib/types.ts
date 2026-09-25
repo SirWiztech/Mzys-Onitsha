@@ -120,6 +120,21 @@ export interface Comment {
   createdAt: string;
 }
 
+export type ProgramCategory = 'provincial' | 'district';
+
+export interface Program {
+  id: string;
+  category: ProgramCategory;
+  /** Sort order within the category (the S/N column). */
+  sn: number;
+  eventType: string;
+  date: string;
+  theme: string;
+  topic: string;
+  venue: string;
+  time: string;
+}
+
 export interface Like {
   id: string;
   productId: string;
