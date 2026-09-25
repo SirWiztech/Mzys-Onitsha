@@ -9,6 +9,7 @@ import * as Separator from '@radix-ui/react-separator';
 import { Camera, Save, Package, Pencil, Trash2, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
+import { groupBranches, districtLabel } from '@/lib/branches';
 import type { Member, Branch, Product } from '@/lib/types';
 
 export default function ProfilePage() {
@@ -22,7 +23,7 @@ export default function ProfilePage() {
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', phone: '', dateOfBirth: '',
-    gender: '', occupation: '', address: '', cherubSeraph: '',
+    gender: '', occupation: '', address: '', cherubSeraph: '', branchId: '',
   });
 
   const load = async () => {
@@ -47,6 +48,7 @@ export default function ProfilePage() {
           occupation: myProfile.occupation,
           address: myProfile.address,
           cherubSeraph: myProfile.cherubSeraph || '',
+          branchId: myProfile.branchId || '',
         });
         const myProducts = await fetch(`/api/products?memberId=${myProfile.id}`).then((r) => r.json());
         setProducts(myProducts);
@@ -98,6 +100,7 @@ export default function ProfilePage() {
           occupation: form.occupation,
           address: form.address,
           cherubSeraph: form.cherubSeraph || null,
+          branchId: form.branchId || '',
         }),
       });
       if (res.ok) { addToast('success', 'Profile updated successfully'); load(); }
@@ -120,6 +123,7 @@ export default function ProfilePage() {
   if (!member) return <p className="text-gray-400 text-sm">No profile found. Contact an admin.</p>;
 
   const getBranchName = (id: string) => branches.find((b) => b.id === id)?.name || 'Unknown';
+  const branchGroups = groupBranches(branches);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -192,6 +196,17 @@ export default function ProfilePage() {
                 { value: 'cherub', label: 'Cherub' },
                 { value: 'seraph', label: 'Seraph' },
               ]}
+            />
+            <Select
+              id="branchId"
+              label="Branch"
+              value={form.branchId}
+              onChange={handleChange}
+              groups={branchGroups.map((g) => ({
+                label: districtLabel(g.district),
+                options: g.branches,
+              }))}
+              placeholder="Select your branch"
             />
           </div>
           <div className="mt-6 flex justify-end">

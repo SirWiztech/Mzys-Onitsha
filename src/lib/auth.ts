@@ -90,7 +90,11 @@ export async function authenticateUser(
   password: string
 ): Promise<User | null> {
   const users = await readData<User>(USERS_FILE);
-  const user = users.find((u) => u.email === email);
+  // Case-insensitive match so lockout keys (which normalize case) can't be
+  // bypassed by varying email casing, and users aren't locked out by a
+  // case mismatch between registration and login.
+  const needle = (email || '').trim().toLowerCase();
+  const user = users.find((u) => u.email.trim().toLowerCase() === needle);
   if (!user) return null;
   if (user.status === 'blocked') return null;
   const valid = await verifyPassword(password, user.passwordHash);

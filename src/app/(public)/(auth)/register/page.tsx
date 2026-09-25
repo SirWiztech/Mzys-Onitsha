@@ -7,6 +7,7 @@ import Select from '@/components/ui/select';
 import Button from '@/components/ui/button';
 import Link from 'next/link';
 import type { Branch } from '@/lib/types';
+import { groupBranches, districtLabel } from '@/lib/branches';
 import { PasswordStrengthMeter, PasswordMatchIndicator } from '@/components/password-strength';
 
 export default function RegisterPage() {
@@ -26,6 +27,7 @@ export default function RegisterPage() {
   });
   const [branches, setBranches] = useState<Branch[]>([]);
   const [branchError, setBranchError] = useState(false);
+  const branchGroups = groupBranches(branches);
   const [step, setStep] = useState<'form' | 'otp'>('form');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -222,7 +224,10 @@ export default function RegisterPage() {
                   label="Branch"
                   value={form.branchId}
                   onChange={(e) => update('branchId', e.target.value)}
-                  options={branches.map((b) => ({ value: b.id, label: b.name }))}
+                  groups={branchGroups.map((g) => ({
+                    label: districtLabel(g.district),
+                    options: g.branches,
+                  }))}
                   placeholder={
                     branches.length === 0 ? 'Loading branches...' : 'Select your branch'
                   }

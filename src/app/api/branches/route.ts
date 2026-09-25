@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
     location: body.location || '',
     leaderName: body.leaderName || '',
     leaderPhone: body.leaderPhone || '',
+    district: body.district || null,
     createdAt: new Date().toISOString(),
   };
 

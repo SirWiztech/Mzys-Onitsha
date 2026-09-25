@@ -1,82 +1,137 @@
 [
   {
-    "id": "mrw0770jv822j5",
-    "name": "Onitsha Main",
-    "location": "Onitsha, Anambra State",
-    "leaderName": "",
-    "leaderPhone": "",
-    "createdAt": "2026-07-22T11:33:06.499Z"
-  },
-  {
-    "id": "mrw0770joct3yp",
-    "name": "GRA Branch",
-    "location": "GRA, Onitsha",
-    "leaderName": "",
-    "leaderPhone": "",
-    "createdAt": "2026-07-22T11:33:06.499Z"
-  },
-  {
-    "id": "mrw0770jdowchx",
-    "name": "Fegge Branch",
+    "id": "msan4mh6ll3pgb",
+    "name": "Fegge Provincial Headquarters Branch",
     "location": "Fegge, Onitsha",
     "leaderName": "",
     "leaderPhone": "",
-    "createdAt": "2026-07-22T11:33:06.499Z"
-  },
-  {
-    "id": "mrw0770jnz5rsb",
-    "name": "Works Layout",
-    "location": "Works Layout, Onitsha",
-    "leaderName": "",
-    "leaderPhone": "",
-    "createdAt": "2026-07-22T11:33:06.499Z"
+    "createdAt": "2026-08-01T17:23:44.202Z",
+    "district": null
   },
   {
     "id": "msan4mh1rsfec1",
-    "name": "Inland Town District",
-    "location": "Inland Town District",
+    "name": "Inland Town Branch",
+    "location": "Inland Town, Onitsha",
     "leaderName": "",
     "leaderPhone": "",
-    "createdAt": "2026-08-01T17:23:44.197Z"
+    "createdAt": "2026-08-01T17:23:44.197Z",
+    "district": "Inland District"
   },
   {
     "id": "msan4mh531hlui",
-    "name": "Ogbeumuonitsha",
-    "location": "Ogbeumuonitsha",
+    "name": "Ogbe Umu Onicha Branch",
+    "location": "Ogbe, Onitsha",
     "leaderName": "",
     "leaderPhone": "",
-    "createdAt": "2026-08-01T17:23:44.201Z"
+    "createdAt": "2026-08-01T17:23:44.201Z",
+    "district": "Inland District"
   },
   {
-    "id": "msan4mh5oeq043",
-    "name": "ESOCS Mount of Miracle Obosi",
-    "location": "ESOCS Mount of Miracle Obosi",
+    "id": "mzbrnsugbe000001",
+    "name": "Nsugbe Branch",
+    "location": "Nsugbe, Anambra",
     "leaderName": "",
     "leaderPhone": "",
-    "createdAt": "2026-08-01T17:23:44.201Z"
+    "createdAt": "2026-09-25T00:00:00.000Z",
+    "district": "Inland District"
   },
   {
-    "id": "msan4mh5gf73lp",
-    "name": "Obosi Branch",
-    "location": "Obosi Branch",
+    "id": "mzbrsanctgr000001",
+    "name": "Sanctuary of Grace",
+    "location": "Onitsha, Anambra",
     "leaderName": "",
     "leaderPhone": "",
-    "createdAt": "2026-08-01T17:23:44.201Z"
+    "createdAt": "2026-09-25T00:00:00.000Z",
+    "district": "Inland District"
   },
   {
-    "id": "msan4mh6ll3pgb",
-    "name": "Fegge Provincial HQ",
-    "location": "Fegge Provincial HQ",
+    "id": "mzbrnkpor1000001",
+    "name": "Nkpor 1",
+    "location": "Nkpor, Anambra",
     "leaderName": "",
     "leaderPhone": "",
-    "createdAt": "2026-08-01T17:23:44.202Z"
+    "createdAt": "2026-09-25T00:00:00.000Z",
+    "district": "Nkpor District"
+  },
+  {
+    "id": "mzbrnkpor2000001",
+    "name": "Nkpor 2",
+    "location": "Nkpor, Anambra",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-09-25T00:00:00.000Z",
+    "district": "Nkpor District"
   },
   {
     "id": "msan4mh6jkkaw1",
     "name": "Nkpor 3",
-    "location": "Nkpor 3",
+    "location": "Nkpor, Anambra",
     "leaderName": "",
     "leaderPhone": "",
-    "createdAt": "2026-08-01T17:23:44.202Z"
+    "createdAt": "2026-08-01T17:23:44.202Z",
+    "district": "Nkpor District"
+  },
+  {
+    "id": "mzbrogidi1000001",
+    "name": "Ogidi 1",
+    "location": "Ogidi, Anambra",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-09-25T00:00:00.000Z",
+    "district": "Ogidi District"
+  },
+  {
+    "id": "mzbrogidi2000001",
+    "name": "Ogidi 2",
+    "location": "Ogidi, Anambra",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-09-25T00:00:00.000Z",
+    "district": "Ogidi District"
+  },
+  {
+    "id": "mzbrogidi3000001",
+    "name": "Ogidi 3",
+    "location": "Ogidi, Anambra",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-09-25T00:00:00.000Z",
+    "district": "Ogidi District"
+  },
+  {
+    "id": "mzbrogidi4000001",
+    "name": "Ogidi 4",
+    "location": "Ogidi, Anambra",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-09-25T00:00:00.000Z",
+    "district": "Ogidi District"
+  },
+  {
+    "id": "mzbraawada000001",
+    "name": "Awada Branch",
+    "location": "Awada, Obosi",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-09-25T00:00:00.000Z",
+    "district": "Awada District"
+  },
+  {
+    "id": "msan4mh5gf73lp",
+    "name": "Obosi Branch",
+    "location": "Obosi, Anambra",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-08-01T17:23:44.201Z",
+    "district": "Awada District"
+  },
+  {
+    "id": "mzbralor0000001",
+    "name": "Alor Branch",
+    "location": "Alor, Anambra",
+    "leaderName": "",
+    "leaderPhone": "",
+    "createdAt": "2026-09-25T00:00:00.000Z",
+    "district": "Awada District"
   }
 ]

@@ -43,6 +43,8 @@ export interface Branch {
   leaderName: string;
   leaderPhone: string;
   createdAt: string;
+  /** District this branch belongs to; null for the provincial HQ branch. */
+  district?: string | null;
 }
 
 export interface FinanceRecord {

@@ -1,14 +1,28 @@
 import { SelectHTMLAttributes, forwardRef } from 'react';
 
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
+export interface SelectOptGroup {
+  /** Heading rendered above the group's options (as an <optgroup> label). */
+  label: string;
+  options: SelectOption[];
+}
+
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
-  options: { value: string; label: string }[];
+  /** Flat option list — mutually exclusive with `groups`. */
+  options?: SelectOption[];
+  /** District-grouped option list — mutually exclusive with `options`. */
+  groups?: SelectOptGroup[];
   placeholder?: string;
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className = '', label, error, id, options, placeholder, ...props }, ref) => {
+  ({ className = '', label, error, id, options, groups, placeholder, ...props }, ref) => {
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
@@ -30,11 +44,21 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               {placeholder}
             </option>
           )}
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
+          {groups
+            ? groups.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))
+            : (options ?? []).map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
         </select>
         {error && <p className="text-xs text-mzys-danger">{error}</p>}
       </div>
